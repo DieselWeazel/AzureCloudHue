@@ -14,11 +14,11 @@ steps:
       packageType: sdk
       version: '5.x'
       
-#  - task: DotNetCoreCLI@2
-#    displayName: 'Restore'
-#    inputs:
-#      command: restore
-#      projects: '**/*.csproj'
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore'
+    inputs:
+      command: restore
+      projects: '**/*.csproj'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build'
