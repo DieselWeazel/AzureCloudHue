@@ -6,13 +6,15 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  #wwwrootDir: 'NOT_USED_YET'
+  dotnetSDKVersion: '5.x'
 
 steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET SDK 5.x'
+    displayName: 'Use .NET SDK $(dotnetSDKVersion)'
     inputs:
       packageType: sdk
-      version: '5.x'
+      version: '$(dotnetSDKVersion)'
       
   - task: DotNetCoreCLI@2
     displayName: 'Restore'
@@ -33,7 +35,7 @@ steps:
     displayName: 'Publish'
     inputs:
       command: publish
-      projects: '**/*.csproj'
+      projects: 'AzureCloudHueAPI/*.csproj'
       publishWebProjects: false
 #      arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
       arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
