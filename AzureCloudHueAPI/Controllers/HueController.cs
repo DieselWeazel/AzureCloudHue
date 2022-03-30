@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AzureCloudHue.Controllers
 {
+    // Route är Hue, Hue[Controller].
     [ApiController]
     [Route("[controller]")]
     public class HueController : ControllerBase

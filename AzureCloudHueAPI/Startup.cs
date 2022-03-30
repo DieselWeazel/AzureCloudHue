@@ -36,12 +36,14 @@ namespace AzureCloudHue
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
+            // TODO, testa Development slots, if (env.IsDevelopment() || env.isStaging()) typ?
+            // Eller sätt miljövariabel själv.
+            // if (env.IsDevelopment())
+            // {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AzureCloudHueAPI v1"));
-            }
+            // }
 
             app.UseHttpsRedirection();
 
