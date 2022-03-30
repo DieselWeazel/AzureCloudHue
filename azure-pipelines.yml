@@ -81,7 +81,7 @@ stages:
                   displayName: 'Azure App Service Deploy: website'
                   inputs:
                     # TODO change Azure Subscription
-                    azureSubscription: 'AzureTest'
+                    azureSubscription: '$(AzureSub)'
                     resourceGroupName: 'cloud-shell-storage-westeurope'
                     appType: webApp
                     appName: '$(WebAppName)'
