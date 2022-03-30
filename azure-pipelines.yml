@@ -1,6 +1,11 @@
 trigger:
   - '*'
   - 
+
+pool:
+  # TODO undersök om vilken vm image som ger bäst resultat, windows-2022 eller ubuntu-20.04?
+  vmImage: 'ubuntu-20.04'
+
 variables:
   buildConfiguration: 'Release'
   #wwwrootDir: 'NOT_USED_YET'
@@ -9,11 +14,7 @@ variables:
   #solution: '**/*.sln'
   WebAppName: 'AzureCloudHue-Harren'
   AzureSub: 'TestingAzure123'
-  # TODO undersök om vilken vm image som ger bäst resultat, windows-2022 eller ubuntu-20.04?
   vmImage: 'ubuntu-20.04'
-  
-pool:
-  vmImage: '${vmImage}'
   
 stages:
   - stage: 'Build'
