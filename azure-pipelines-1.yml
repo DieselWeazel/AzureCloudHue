@@ -13,8 +13,7 @@ variables:
   # Används ej än, men kan vara användbar
   #solution: '**/*.sln'
   WebAppName: 'AzureCloudHue-Harren'
-  # Den här refererar till Azure Resource Managern som finns här i DevOps under Service Connections
-  AzureSub: 'Trial Account Subscription'
+  AzureSub: 'TestingAzure123'
   vmImage: 'ubuntu-20.04'
   
 stages:
