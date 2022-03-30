@@ -14,26 +14,29 @@ steps:
       packageType: sdk
       version: '5.x'
       
+#  - task: DotNetCoreCLI@2
+#    displayName: 'Restore'
+#    inputs:
+#      command: restore
+#      projects: '**/*.csproj'
+
   - task: DotNetCoreCLI@2
-    displayName: 'Restore project dependencies'
+    displayName: 'Build'
     inputs:
-      command: 'restore'
+      command: build
+      arguments: '--no-restore --configuration Release'
+      # TODO testprojektet bör väl bara byggas, före bygget av själva API:t?
+      # projects: 'AzureCloudHueAPI/*.csproj'
       projects: '**/*.csproj'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Build the project - Release'
+    displayName: 'Publish'
     inputs:
-      command: 'build'
-      arguments: '--no-restore --configuration Release'
-      projects: 'AzureCloudHueAPI/*.csproj'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Publish the project - Release'
-    inputs:
-      command: 'publish'
+      command: publish
       projects: '**/*.csproj'
       publishWebProjects: false
 #      arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+      arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
       zipAfterPublish: true
 
   - task: PublishBuildArtifacts@1
