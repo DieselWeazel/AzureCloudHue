@@ -20,42 +20,42 @@ stages:
     displayName: 'Build WebAPI Application'
     jobs:
       - job: 'Build'
-      steps:
-        - task: UseDotNet@2
-          displayName: 'Use .NET SDK $(dotnetSDKVersion)'
-          inputs:
-            packageType: sdk
-            version: '$(dotnetSDKVersion)'
-      
-        - task: DotNetCoreCLI@2
-          displayName: 'Restore'
-          inputs:
-            command: restore
-            projects: '**/*.csproj'
-      
-        - task: DotNetCoreCLI@2
-          displayName: 'Build'
-          inputs:
-            command: build
-            arguments: '--no-restore --configuration Release'
-            # TODO testprojektet bör väl bara byggas, före bygget av själva API:t?
-            # projects: 'AzureCloudHueAPI/*.csproj'
-            projects: '**/*.csproj'
-      
-        - task: DotNetCoreCLI@2
-          displayName: 'Publish'
-          inputs:
-            command: publish
-            projects: 'AzureCloudHueAPI/*.csproj'
-            publishWebProjects: false
-            #      arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
-            arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-            zipAfterPublish: true
-      
-        - task: PublishBuildArtifacts@1
-          displayName: 'Publish Artifact: drop'
-          # Denna ska vara given, men lämnar ifall att.
-          #condition: succeeded()
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET SDK $(dotnetSDKVersion)'
+            inputs:
+              packageType: sdk
+              version: '$(dotnetSDKVersion)'
+        
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore'
+            inputs:
+              command: restore
+              projects: '**/*.csproj'
+        
+          - task: DotNetCoreCLI@2
+            displayName: 'Build'
+            inputs:
+              command: build
+              arguments: '--no-restore --configuration Release'
+              # TODO testprojektet bör väl bara byggas, före bygget av själva API:t?
+              # projects: 'AzureCloudHueAPI/*.csproj'
+              projects: '**/*.csproj'
+        
+          - task: DotNetCoreCLI@2
+            displayName: 'Publish'
+            inputs:
+              command: publish
+              projects: 'AzureCloudHueAPI/*.csproj'
+              publishWebProjects: false
+              #      arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+              zipAfterPublish: true
+        
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact: drop'
+            # Denna ska vara given, men lämnar ifall att.
+            #condition: succeeded()
 
   - stage: 'Deploy'
     displayName: 'Deploy to Azure'
