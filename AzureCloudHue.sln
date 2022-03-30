@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCloudHueAPI", "AzureCloudHueAPI\AzureCloudHueAPI.csproj", "{3A734D73-BBB5-4D76-A836-B6B7FC08FDED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCloudHueAPI.Tests", "AzureCloudHueAPI.Tests\AzureCloudHueAPI.Tests.csproj", "{6B0A796F-977D-4B85-9882-C42024F561FF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A734D73-BBB5-4D76-A836-B6B7FC08FDED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A734D73-BBB5-4D76-A836-B6B7FC08FDED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A734D73-BBB5-4D76-A836-B6B7FC08FDED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A734D73-BBB5-4D76-A836-B6B7FC08FDED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B0A796F-977D-4B85-9882-C42024F561FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B0A796F-977D-4B85-9882-C42024F561FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B0A796F-977D-4B85-9882-C42024F561FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B0A796F-977D-4B85-9882-C42024F561FF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>AzureCloudHue</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Q42.HueApi" Version="3.19.3" />
+        <PackageReference Include="Q42.HueApi.ColorConverters" Version="3.18.1" />
+        <PackageReference Include="Q42.HueApi.Entertainment" Version="3.18.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+    </ItemGroup>
+
+</Project>
