@@ -24,7 +24,23 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "HUE_API": "https://192.168.1.5/api/3ioWgarB3Z6YFdK3aBsewSxPsSSI0DXtxu7loYto/",
+        "EndpointUri": "https://azure-cloud-hue-db.documents.azure.com:443/",
+        "PrimaryKey": "aIvEvQIydDiRlYVlyqE362C5mLhzS7Igwtn3m8AVnVT92ltKFuFFSNlwBDrO6CTJlkYw24NL0lzOjx4KXQBTdw=="
+      }
+    },
+    "AzureCloudHue-production": {
+      "commandName": "Project",
+      "dotnetRunMessages": "true",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "HUE_API": "https://192.168.1.5/api/3ioWgarB3Z6YFdK3aBsewSxPsSSI0DXtxu7loYto/",
+        "EndpointUri": "https://azure-cloud-hue-db.documents.azure.com:443/",
+        "PrimaryKey": "aIvEvQIydDiRlYVlyqE362C5mLhzS7Igwtn3m8AVnVT92ltKFuFFSNlwBDrO6CTJlkYw24NL0lzOjx4KXQBTdw=="
       }
     }
   }

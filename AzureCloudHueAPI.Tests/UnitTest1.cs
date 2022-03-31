@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace AzureCloudHue.Tests

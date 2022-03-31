@@ -44,6 +44,10 @@
         "net5.0": {
           "targetAlias": "net5.0",
           "dependencies": {
+            "Microsoft.Azure.Cosmos": {
+              "target": "Package",
+              "version": "[3.26.1, )"
+            },
             "Q42.HueApi": {
               "target": "Package",
               "version": "[3.19.3, )"
