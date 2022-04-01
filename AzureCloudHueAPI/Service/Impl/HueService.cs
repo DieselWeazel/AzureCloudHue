@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AzureCloudHue.Model;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using Q42.HueApi.ColorConverters.Gamut;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models.Gamut;
 using Q42.HueApi.Models.Groups;
+using Q42.HueApi.Streaming.Models;
 
 namespace AzureCloudHue.Service.Impl
 {
@@ -26,6 +28,8 @@ namespace AzureCloudHue.Service.Impl
             _client.Initialize("3ioWgarB3Z6YFdK3aBsewSxPsSSI0DXtxu7loYto");
         }
         
+        // TODO den här behöver också loopa igenom kanske?
+        // Group är ju All.. Kanske går att använda sig av det?
         public async Task<HueResults> SetAllLights(LightState lightState)
         {
             LightCommand command = new LightCommand();
@@ -53,7 +57,7 @@ namespace AzureCloudHue.Service.Impl
             return await _client.SendCommandAsync(command);
         }
 
-        public async Task<HueResults> SetIndividualLight(HueLight hueLight)
+        public async Task<List<HueResults>> SetIndividualLight(HueLight hueLight)
         {
             LightCommand command = new LightCommand();
 
@@ -71,17 +75,62 @@ namespace AzureCloudHue.Service.Impl
                 // command.On = lightState.On;
             // }
             
-            return await SetLightLight(hueLight.LightState, new List<string>{hueLight.LightId.ToString()});
+            List<HueResults> hueResults = new List<HueResults>();
+            for (int i = 0; i < hueLight.LightStates.Count; i++)
+            {
+                var hueResult = await SetLightList(hueLight.LightStates[i], new List<string>{hueLight.LightId.ToString()});
+                hueResults.Add(hueResult);
+                var sleepInInt = Convert.ToInt32(hueLight.LightStates[i].TransitionTimeInMs);
+                Thread.Sleep(sleepInInt);
+            }
+
+            return hueResults;
         }
 
-        public async Task<HueResults> SetGroupLights(HueGroup hueGroup)
+        public async Task<string> SetGroupLights(HueGroup hueGroup)
         {
             var group = await _client.GetGroupAsync(hueGroup.GroupId.ToString());
 
-            return await SetLightLight(hueGroup.LightState, group.Lights);
+            // List<HueResults> hueResults = new List<HueResults>();
+            // for (int i = 0; i < hueGroup.LightStates.Count; i++)
+            // {
+            //     var hueResult = await SetLightLight(hueGroup.LightStates[i], group.Lights);
+            //     hueResults.Add(hueResult);
+            //     var sleepInInt = Convert.ToInt32(hueGroup.LightStates[i].TransitionTimeInMs);
+            //     Thread.Sleep(sleepInInt);
+            // }
+            if (hueGroup.Repeat)
+            {
+                StartLightRotationRepeat(hueGroup.LightStates, group.Lights);
+            }
+            else
+            {
+                StartLightRotation(hueGroup.LightStates, group.Lights);
+            }
+
+            return "Done";
         }
 
-        private async Task<HueResults> SetLightLight(LightState lightState, List<string> lights)
+        public async Task StartLightRotationRepeat(List<LightState> lightStates, List<string> lights)
+        {
+            HueThread hueThread = new HueThread(lightStates, lights, _client);
+            hueThread.Start();
+        }
+
+        public async Task StartLightRotation(List<LightState> lightStates, List<string> lights)
+        {
+            // List<HueResults> hueResults = new List<HueResults>();
+            for (int i = 0; i < lightStates.Count; i++)
+            {
+                // var hueResult = 
+                await SetLightList(lightStates[i], lights);
+                // hueResults.Add(hueResult);
+                var sleepInInt = Convert.ToInt32(lightStates[i].TransitionTimeInMs);
+                Thread.Sleep(sleepInInt);
+            }
+        }
+
+        private async Task<HueResults> SetLightList(LightState lightState, List<string> lights)
         {
             LightCommand command = new LightCommand();
 
@@ -92,7 +141,7 @@ namespace AzureCloudHue.Service.Impl
             
             // if (light.On != null)
             // {
-            command.On = lightState.On;
+            // command.On = lightState.On;
             // }
             
             CIE1931Point point = HueColorConverter.RgbToXY(new RGBColor(lightState.HexColor), null);

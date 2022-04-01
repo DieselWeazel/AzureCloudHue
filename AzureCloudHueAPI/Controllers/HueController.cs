@@ -27,12 +27,6 @@ namespace AzureCloudHue.Controllers
             _hueService = hueService;
         }
 
-        [HttpGet]
-        public string Get()
-        {
-            return "Hello from Azure Cloud Hue";
-        }
-
         [HttpPost("/SetStateOfAllLamps")]
         public async Task<HueResults> SetStateOfAllLamps([FromBody] LightState lightState)
         {
@@ -40,13 +34,13 @@ namespace AzureCloudHue.Controllers
         }
 
         [HttpPost("/SetStateOfIndividualLamp")]
-        public async Task<HueResults> SetStateOfIndividualLamp([FromBody] HueLight hueLight)
+        public async Task<List<HueResults>> SetStateOfIndividualLamp([FromBody] HueLight hueLight)
         {
             return await _hueService.SetIndividualLight(hueLight);
         }
 
         [HttpPost("/SetStateOfGroup")]
-        public async Task<HueResults> SetStateOfGroup([FromBody] HueGroup hueGroup)
+        public async Task<string> SetStateOfGroup([FromBody] HueGroup hueGroup)
         {
             return await _hueService.SetGroupLights(hueGroup);
         }
