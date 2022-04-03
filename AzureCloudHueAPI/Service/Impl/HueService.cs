@@ -57,7 +57,7 @@ namespace AzureCloudHue.Service.Impl
             return await _client.SendCommandAsync(command);
         }
 
-        public async Task<List<HueResults>> SetIndividualLight(HueLight hueLight)
+        public async Task<List<HueResults>> SetIndividualLight(HueLightRotation hueLightRotation)
         {
             LightCommand command = new LightCommand();
 
@@ -76,20 +76,20 @@ namespace AzureCloudHue.Service.Impl
             // }
             
             List<HueResults> hueResults = new List<HueResults>();
-            for (int i = 0; i < hueLight.LightStates.Count; i++)
+            for (int i = 0; i < hueLightRotation.LightStates.Count; i++)
             {
-                var hueResult = await SetLightList(hueLight.LightStates[i], new List<string>{hueLight.LightId.ToString()});
+                var hueResult = await SetLightList(hueLightRotation.LightStates[i], new List<string>{hueLightRotation.LightId.ToString()});
                 hueResults.Add(hueResult);
-                var sleepInInt = Convert.ToInt32(hueLight.LightStates[i].TransitionTimeInMs);
+                var sleepInInt = Convert.ToInt32(hueLightRotation.LightStates[i].TransitionTimeInMs);
                 Thread.Sleep(sleepInInt);
             }
 
             return hueResults;
         }
 
-        public async Task<string> SetGroupLights(HueGroup hueGroup)
+        public async Task<string> SetGroupLights(HueGroupRotation hueGroupRotation)
         {
-            var group = await _client.GetGroupAsync(hueGroup.GroupId.ToString());
+            var group = await _client.GetGroupAsync(hueGroupRotation.GroupId.ToString());
 
             // List<HueResults> hueResults = new List<HueResults>();
             // for (int i = 0; i < hueGroup.LightStates.Count; i++)
@@ -99,13 +99,13 @@ namespace AzureCloudHue.Service.Impl
             //     var sleepInInt = Convert.ToInt32(hueGroup.LightStates[i].TransitionTimeInMs);
             //     Thread.Sleep(sleepInInt);
             // }
-            if (hueGroup.Repeat)
+            if (hueGroupRotation.Repeat)
             {
-                StartLightRotationRepeat(hueGroup.LightStates, group.Lights);
+                StartLightRotationRepeat(hueGroupRotation.LightStates, group.Lights);
             }
             else
             {
-                StartLightRotation(hueGroup.LightStates, group.Lights);
+                StartLightRotation(hueGroupRotation.LightStates, group.Lights);
             }
 
             return "Done";

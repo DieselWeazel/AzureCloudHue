@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-
-namespace AzureCloudHue.Model
+﻿namespace AzureCloudHue.Model
 {
     public class HueLight
     {
         public int LightId { get; set; }
         
-        public List<LightState> LightStates { get; set; }
+        public LightState LightState { get; set; }
     }
 }

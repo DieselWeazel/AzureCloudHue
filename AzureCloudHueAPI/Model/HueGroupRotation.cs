@@ -2,7 +2,7 @@
 
 namespace AzureCloudHue.Model
 {
-    public class HueGroup
+    public class HueGroupRotation
     {
         public int GroupId { get; set; }
         
