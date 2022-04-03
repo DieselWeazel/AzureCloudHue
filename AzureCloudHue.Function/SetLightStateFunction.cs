@@ -1,0 +1,58 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using AzureCloudHue.Model;
+using AzureCloudHue.Util;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Q42.HueApi;
+using Q42.HueApi.ColorConverters;
+using Q42.HueApi.ColorConverters.Gamut;
+using Q42.HueApi.Interfaces;
+using Q42.HueApi.Models.Gamut;
+
+namespace AzureCloudHue.Function;
+
+public class SetLightStateFunction
+{
+    private readonly ILocalHueClient _client;
+    
+    public SetLightStateFunction(ILocalHueClient localHueClient)
+    {
+        _client = localHueClient;
+    }
+    
+    [FunctionName("HueLamp_SetLightState")]
+    public async Task<string> SetLightState([ActivityTrigger] HueLight hueLight, ILogger log)
+    {
+        log.LogInformation($"Setting light with id {hueLight.LightId}");
+        log.LogInformation($"State is {hueLight.LightState}");
+
+        var light = await _client.GetLightAsync(hueLight.LightId.ToString());
+        
+        if (light == null)
+        {
+            return JsonConvert.SerializeObject(
+                new BadRequestObjectResult($"No light with id {hueLight.LightId} found in bridge"));
+        }
+
+        var command = new LightCommandMapper(light).MapLightStateToCommand(hueLight.LightState);
+
+        if (command == null)
+        {
+            return JsonConvert.SerializeObject(
+                new OkObjectResult($"Light with id {hueLight.LightId} already has the requested state"));
+        }
+        
+        var sentCommand = await _client.SendCommandAsync(command, new List<string>() {hueLight.LightId.ToString()});
+
+        return JsonConvert.SerializeObject(new OkObjectResult(sentCommand));
+    }
+}

@@ -82,40 +82,40 @@ public static class DurableHueFunctionOrchestrator
         return outputs;
     }
 
-    [FunctionName("CollectHueResultsOutput")]
-    private static async Task<string> SetParallellTasks([ActivityTrigger]List<Task<int>> parallelTasks)
-    {
-        throw new NotImplementedException();
-    }
+    // [FunctionName("CollectHueResultsOutput")]
+    // private static async Task<string> SetParallellTasks([ActivityTrigger]List<Task<int>> parallelTasks)
+    // {
+    //     throw new NotImplementedException();
+    // }
 
-
-    [FunctionName("HueLamp_SetLightState")]
-    public static async Task<string> SetLightState([ActivityTrigger] HueLight hueLight, ILogger log)
-    {
-        log.LogInformation($"Setting light with id {hueLight.LightId}");
-        log.LogInformation($"State is {hueLight.LightState}");
-        
-        LightCommand command = new LightCommand();
-        ILocalHueClient _client = new LocalHueClient("192.168.1.5");
-        _client.Initialize("3ioWgarB3Z6YFdK3aBsewSxPsSSI0DXtxu7loYto");
-
-        // TODO en Command Mapper! (Command GetCommandFromLightState(LightState lightState);"
-        LightState lightState = hueLight.LightState;
-
-        command.On = lightState.On;
-        CIE1931Point point = HueColorConverter.RgbToXY(new RGBColor(lightState.HexColor), null);
-        command.SetColor(point.x, point.y);
-            
-        // TODO Behöver Transition Time verifieras? Måhända inte.. Men prova med random shit!
-        command.TransitionTime = TimeSpan.FromMilliseconds(lightState.TransitionTimeInMs);
-            
-        // TODO något som verifierar att brightness är 0-255
-        command.Brightness = Convert.ToByte(lightState.Brightness);
-            
-        var sentCommand = await _client.SendCommandAsync(command, new List<string>() {hueLight.LightId.ToString()});
-
-        return JsonConvert.SerializeObject(new OkObjectResult(sentCommand));
-    }
+    //
+    // [FunctionName("HueLamp_SetLightState")]
+    // public static async Task<string> SetLightState([ActivityTrigger] HueLight hueLight, ILogger log)
+    // {
+    //     log.LogInformation($"Setting light with id {hueLight.LightId}");
+    //     log.LogInformation($"State is {hueLight.LightState}");
+    //     
+    //     LightCommand command = new LightCommand();
+    //     ILocalHueClient _client = new LocalHueClient("192.168.1.5");
+    //     _client.Initialize("3ioWgarB3Z6YFdK3aBsewSxPsSSI0DXtxu7loYto");
+    //
+    //     // TODO en Command Mapper! (Command GetCommandFromLightState(LightState lightState);"
+    //     LightState lightState = hueLight.LightState;
+    //
+    //     command.On = lightState.On;
+    //     CIE1931Point point = HueColorConverter.RgbToXY(new RGBColor(lightState.HexColor), null);
+    //     command.SetColor(point.x, point.y);
+    //         
+    //     // TODO Behöver Transition Time verifieras? Måhända inte.. Men prova med random shit!
+    //     command.TransitionTime = TimeSpan.FromMilliseconds(lightState.TransitionTimeInMs);
+    //         
+    //     // TODO något som verifierar att brightness är 0-255
+    //     command.Brightness = Convert.ToByte(lightState.Brightness);
+    //         
+    //     var sentCommand = await _client.SendCommandAsync(command, new List<string>() {hueLight.LightId.ToString()});
+    //
+    //     return JsonConvert.SerializeObject(new OkObjectResult(sentCommand));
+    // }
 
     [FunctionName("DurableHueFunctionOrchestrator_HttpStart")]
     public static async Task<HttpResponseMessage> HttpStart(
