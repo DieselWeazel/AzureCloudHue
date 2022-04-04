@@ -18,12 +18,20 @@ namespace AzureCloudHue.Service.Impl
         private readonly ILogger<HueService> _logger;
 
         private ILocalHueClient _client;
+
+        private HueClient _hueClient;
         
         public HueService(ILogger<HueService> logger)
         {
             _logger = logger;
-            _client = new LocalHueClient("192.168.1.5");
-            _client.Initialize("3ioWgarB3Z6YFdK3aBsewSxPsSSI0DXtxu7loYto");
+            // _client = new LocalHueClient("192.168.1.5");
+            // _client.Initialize("3ioWgarB3Z6YFdK3aBsewSxPsSSI0DXtxu7loYto");
+            _hueClient = new HueClient();
+        }
+
+        public async Task InitiateClient()
+        {
+            await _hueClient.InitRemoteClient("ZyI1HXEYD0P7XUxskYUiCn1snmWo", "604799", "chjNXITp7sRTQvSm8QOaKLi2qAhZQICk");
         }
         
         // TODO den här behöver också loopa igenom kanske?
@@ -51,8 +59,8 @@ namespace AzureCloudHue.Service.Impl
             
             // TODO något som verifierar att brightness är 0-255
             command.Brightness = Convert.ToByte(lightState.Brightness);
-            
-            return await _client.SendCommandAsync(command);
+
+            return await _hueClient.SendCommandAsync(command);
         }
 
         public async Task<List<HueResults>> SetIndividualLight(HueLightRotation hueLightRotation)
@@ -87,7 +95,7 @@ namespace AzureCloudHue.Service.Impl
 
         public async Task<string> SetGroupLights(HueGroupRotation hueGroupRotation)
         {
-            var group = await _client.GetGroupAsync(hueGroupRotation.GroupId.ToString());
+            var group = await _hueClient.GetGroupAsync(hueGroupRotation.GroupId.ToString());
 
             // List<HueResults> hueResults = new List<HueResults>();
             // for (int i = 0; i < hueGroup.LightStates.Count; i++)
@@ -149,7 +157,7 @@ namespace AzureCloudHue.Service.Impl
             
             command.Brightness = Convert.ToByte(lightState.Brightness);
             
-            return await _client.SendCommandAsync(command, lights);
+            return await _hueClient.SendCommandAsync(command, lights);
         }
     }
 }

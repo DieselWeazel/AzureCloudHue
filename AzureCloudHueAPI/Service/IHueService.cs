@@ -7,6 +7,8 @@ namespace AzureCloudHue.Service
 {
     public interface IHueService
     {
+        Task InitiateClient();
+        
         Task<HueResults> SetAllLights(LightState lightState);
 
         Task<List<HueResults>> SetIndividualLight(HueLightRotation hueLightRotation);

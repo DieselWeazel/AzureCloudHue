@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AzureCloudHue.Model;
 using AzureCloudHue.Util;
-using ClassLibrary1;
+using HueClient.Bindings;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -51,6 +51,7 @@ public class SetLightStateFunction
     
     [FunctionName("HueLamp_SetLightState")]
     public async Task<string> SetLightState([ActivityTrigger] HueLight hueLight, 
+        // TODO HueBridgeAddress borde vara LocalAddress bara.
         [HueBridge(Address = "%HueBridgeAddress%",
             AppKey="%HueAppKey%",
             AccessToken = "%AccessToken%",

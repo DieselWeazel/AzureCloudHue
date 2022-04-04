@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
-using ClassLibrary1;
+using HueClient.Bindings;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 
 [assembly: WebJobsStartup(typeof(HueClientWebJobsStartup))]
-namespace ClassLibrary1;
+namespace HueClient.Bindings;
 
 public class HueClientWebJobsStartup : IWebJobsStartup
 {
