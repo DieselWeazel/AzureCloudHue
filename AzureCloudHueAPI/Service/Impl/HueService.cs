@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AzureCloudHue.Model;
+using AzureCloudHue.Util;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.ColorConverters;
@@ -63,10 +64,8 @@ namespace AzureCloudHue.Service.Impl
             return await _hueClient.SendCommandAsync(command);
         }
 
-        public async Task<List<HueResults>> SetIndividualLight(HueLightRotation hueLightRotation)
+        public async Task<List<HueResults>> SetIndividualLightRotation(HueLightRotation hueLightRotation)
         {
-            LightCommand command = new LightCommand();
-
             // TODO -> Om det går att få fram lampan före, så lägg Command här
             // Och hämta tillståndet (on/off) först.
             
@@ -84,7 +83,9 @@ namespace AzureCloudHue.Service.Impl
             List<HueResults> hueResults = new List<HueResults>();
             for (int i = 0; i < hueLightRotation.LightStates.Count; i++)
             {
-                var hueResult = await SetLightList(hueLightRotation.LightStates[i], new List<string>{hueLightRotation.LightId.ToString()});
+                var light = await _hueClient.GetLightAsync(hueLightRotation.LightId.ToString());
+                var command = new LightCommandMapper(light).MapLightStateToCommand(hueLightRotation.LightStates[i]);
+                var hueResult = await _hueClient.SendCommandAsync(command, new List<string>() {hueLightRotation.LightId.ToString()});
                 hueResults.Add(hueResult);
                 var sleepInInt = Convert.ToInt32(hueLightRotation.LightStates[i].TransitionTimeInMs);
                 Thread.Sleep(sleepInInt);
@@ -93,7 +94,14 @@ namespace AzureCloudHue.Service.Impl
             return hueResults;
         }
 
-        public async Task<string> SetGroupLights(HueGroupRotation hueGroupRotation)
+        public async Task<HueResults> SetIndividualLight(HueLight hueLight)
+        {
+            var light = await _hueClient.GetLightAsync(hueLight.LightId.ToString());
+            var command = new LightCommandMapper(light).MapLightStateToCommand(hueLight.LightState);
+            return await _hueClient.SendCommandAsync(command, new List<string>() {hueLight.LightId.ToString()});
+        }
+        
+        public async Task<string> SetGroupLightsRotation(HueGroupRotation hueGroupRotation)
         {
             var group = await _hueClient.GetGroupAsync(hueGroupRotation.GroupId.ToString());
 

@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCloudHueAPI", "AzureCl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCloudHueAPI.Tests", "AzureCloudHueAPI.Tests\AzureCloudHueAPI.Tests.csproj", "{6B0A796F-977D-4B85-9882-C42024F561FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCloudHue.Function", "AzureCloudHue.Function\AzureCloudHue.Function.csproj", "{A45F7D14-AFC7-43A2-8C7C-3A15064CD325}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCloudHue.FanOutFanInFunction", "AzureCloudHue.FanOutFanInFunction\AzureCloudHue.FanOutFanInFunction.csproj", "{A45F7D14-AFC7-43A2-8C7C-3A15064CD325}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HueClient.Bindings", "HueClient.Bindings\HueClient.Bindings.csproj", "{0A88251F-8691-4933-BBEA-222882AE053D}"
 EndProject
