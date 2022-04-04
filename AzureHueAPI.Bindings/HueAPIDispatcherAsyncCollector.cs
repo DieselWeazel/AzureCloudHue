@@ -5,15 +5,15 @@ using Newtonsoft.Json;
 
 namespace HueClient.Bindings;
 
-public class HueDispatcherAsyncCollector : IAsyncCollector<HueLight>
+public class HueAPIDispatcherAsyncCollector : IAsyncCollector<HueLight>
 {
-    private HueAPIAttribute _hueApiAttribute;
+    private AzureHueAPIAttribute _azureHueApiAttribute;
 
     private HttpClient _httpClient;
     
-    public HueDispatcherAsyncCollector(HueAPIAttribute hueApiAttribute)
+    public HueAPIDispatcherAsyncCollector(AzureHueAPIAttribute azureHueApiAttribute)
     {
-        _hueApiAttribute = hueApiAttribute;
+        _azureHueApiAttribute = azureHueApiAttribute;
         HttpClientHandler clientHandler = new HttpClientHandler();
         clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
 
@@ -23,7 +23,7 @@ public class HueDispatcherAsyncCollector : IAsyncCollector<HueLight>
     public async Task AddAsync(HueLight item, CancellationToken cancellationToken = new CancellationToken())
     {
         HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post,
-            $"{_hueApiAttribute.Address}SetStateOfIndividualLamp");
+            $"{_azureHueApiAttribute.Address}SetStateOfIndividualLamp");
 
         string hueLightJson = JsonConvert.SerializeObject(item);
         

@@ -3,14 +3,14 @@ using HueClient.Bindings;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 
-[assembly: WebJobsStartup(typeof(HueClientWebJobsStartup))]
+[assembly: WebJobsStartup(typeof(AzureHueAPIWebJobsStartup))]
 namespace HueClient.Bindings;
 
-public class HueClientWebJobsStartup : IWebJobsStartup
+public class AzureHueAPIWebJobsStartup : IWebJobsStartup
 {
     public void Configure(IWebJobsBuilder builder)
     {
-        builder.AddExtension<HueClientConfigProvider>();
+        builder.AddExtension<AzureHueAPIConfigProvider>();
     }
     
 }

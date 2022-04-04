@@ -13,7 +13,7 @@ public class SetLightStateFunction
 {
     [FunctionName("HueLamp_SetLightState")]
     public async Task<string> SetLightState([ActivityTrigger] HueLight hueLight, 
-        [HueAPI(Address = "%HueAPIAddress%")]IAsyncCollector<HueLight> bridge,
+        [AzureHueAPI(Address = "%HueAPIAddress%")]IAsyncCollector<HueLight> bridge,
         ILogger log)
     {
         log.LogInformation($"Setting light with id {hueLight.LightId}");
