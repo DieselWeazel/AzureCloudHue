@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AzureCloudHue.Model;
@@ -11,7 +10,6 @@ using Q42.HueApi.ColorConverters.Gamut;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models.Gamut;
 using Q42.HueApi.Models.Groups;
-using Q42.HueApi.Streaming.Models;
 
 namespace AzureCloudHue.Service.Impl
 {

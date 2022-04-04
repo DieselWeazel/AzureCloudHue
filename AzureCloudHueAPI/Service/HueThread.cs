@@ -8,7 +8,6 @@ using Q42.HueApi.ColorConverters;
 using Q42.HueApi.ColorConverters.Gamut;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models.Gamut;
-using Q42.HueApi.Models.Groups;
 
 namespace AzureCloudHue.Service
 {
