@@ -23,5 +23,6 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\AzureCloudHueAPI\AzureCloudHueAPI.csproj" />
+      <ProjectReference Include="..\HueClient.Bindings\HueClient.Bindings.csproj" />
     </ItemGroup>
 </Project>
