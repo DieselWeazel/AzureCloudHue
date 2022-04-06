@@ -15,9 +15,9 @@ public static class FanInFanOutOrchestrator
         [OrchestrationTrigger] IDurableOrchestrationContext context)
     {
         var outputs = new List<string>();
-        var bsObj = context.GetInput<JArray>();
+        var jArrayOfLightsToChange = context.GetInput<JArray>();
         
-        var hueLights = await context.CallActivityAsync<List<HueLight>>("DeserializeHueLights", bsObj);
+        var hueLights = await context.CallActivityAsync<List<HueLight>>("DeserializeHueLights", jArrayOfLightsToChange);
 
         var parallelTasks = new List<Task<string>>();
         for (int i = 0; i < hueLights.Count; i++)
