@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using HueClient.Bindings;
+﻿using HueClient.Bindings;
+using HueClient.Bindings.HueAPIOutputBinding;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 

@@ -1,14 +1,16 @@
-﻿using Microsoft.Azure.WebJobs.Description;
+﻿using HueClient.Bindings.HueAPIInputBinding;
 using Microsoft.Azure.WebJobs.Host.Config;
 
-namespace HueClient.Bindings;
+namespace HueClient.Bindings.HueAPIOutputBinding;
 
-[Extension("BridgeAddress")]
 internal class AzureHueAPIConfigProvider : IExtensionConfigProvider
 {
     public void Initialize(ExtensionConfigContext context)
     {
-        var bindingRule = context.AddBindingRule<AzureHueAPIAttribute>();
-        bindingRule.BindToCollector(attribute => new HueAPIDispatcherAsyncCollector(attribute));
+        var azureHueApiSetLightStateBindingRule = context.AddBindingRule<AzureHueAPIAttribute>();
+        azureHueApiSetLightStateBindingRule.BindToCollector(attribute => new HueAPIDispatcherAsyncCollector(attribute));
+
+        var azureHueApiFetchLightStateBindingRule = context.AddBindingRule<CurrentLightStateBindingAttribute>();
+        azureHueApiFetchLightStateBindingRule.BindToInput(attribute => new HueAPIFetcherFluentBinder(attribute).FetchLightStateFromAttribute());
     }
 }

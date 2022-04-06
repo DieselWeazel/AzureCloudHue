@@ -8,7 +8,6 @@ using Q42.HueApi.Models.Groups;
 
 namespace AzureCloudHue.Controllers
 {
-    // Route är Hue, Hue[Controller].
     [ApiController]
     [Route("[controller]")]
     public class HueController : ControllerBase
@@ -29,6 +28,12 @@ namespace AzureCloudHue.Controllers
         public async Task<HueResults> SetStateOfAllLamps([FromBody] LightState lightState)
         {
             return await _hueService.SetAllLights(lightState);
+        }
+
+        [HttpGet("/GetStateOfLamp/{lightId}")]
+        public async Task<HueLight> GetStateOfLamp(string lightId)
+        {
+            return await _hueService.GetStateOfLamp(lightId);
         }
 
         [HttpPost("/SetStateOfIndividualLamp")]

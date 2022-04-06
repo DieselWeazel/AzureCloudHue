@@ -1,12 +1,9 @@
 ﻿using System;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using AzureCloudHue.Model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 
 namespace AzureCloudHue.MonitorFunction;
@@ -14,60 +11,41 @@ namespace AzureCloudHue.MonitorFunction;
 public static class HueLightPollingOrchestrator
 {
     [FunctionName("HueLightPollingOrchestrator")]
-    public static async Task RunOrchestrator(
+    public static async Task<ResultMonitoringDTO> RunOrchestrator(
         [OrchestrationTrigger] IDurableOrchestrationContext context,
         ILogger log)
     {
-        DateTime expireInTime = DateTime.UtcNow.AddMinutes(5);
-
-        while (context.CurrentUtcDateTime < expireInTime)
+        string hexColor = context.GetInput<string>();
+        log.LogInformation($"Hex color to set is {hexColor}");
+        DateTime expireInTime = context.CurrentUtcDateTime.AddSeconds(60);
+        
+        if (!context.IsReplaying)
         {
-            var desiredHueLightStatus = await context.CallActivityAsync<MonitoredHueRequest>("GetHueLightStatus", null);
-
-            if (desiredHueLightStatus.On)
-            {
-                await context.CallActivityAsync("SetToColor", null);
-                break;
-            }
+            log.LogInformation($"Monitor started, expiring at: {expireInTime}");
         }
 
-        log.LogInformation($"Monitor expiring.");
+        ResultMonitoringDTO result = new ResultMonitoringDTO();
         
-    }
-    //
-    // [Deterministic]
-    // private static void VerifyRequest(MonitorRequest request)
-    // {
-    //     if (request == null)
-    //     {
-    //         throw new ArgumentNullException(nameof(request), "An input object is required.");
-    //     }
-    //
-    //     if (request.Location == null)
-    //     {
-    //         throw new ArgumentNullException(nameof(request.Location), "A location input is required.");
-    //     }
-    //
-    //     if (string.IsNullOrEmpty(request.Phone))
-    //     {
-    //         throw new ArgumentNullException(nameof(request.Phone), "A phone number input is required.");
-    //     }
-    // }
+        while (context.CurrentUtcDateTime < expireInTime)
+        {
+            log.LogInformation($"Expiration time is still: {expireInTime}");
+            
+            var hueLight = await context.CallActivityAsync<HueLight>("GetHueLightState", hexColor);
 
-    
-    // TODO, behövs verkligen en HttpTrigger? Kan jag inte bara köra min DurableFunction som ett litet troll i bakgrunden?
-    [FunctionName("MonitorHueLight_HttpStart")]
-    public static async Task<HttpResponseMessage> HttpStart(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get")]
-        HttpRequestMessage req,
-        [DurableClient] IDurableOrchestrationClient starter,
-        ILogger log)
-    {
-        string instanceId = await starter.StartNewAsync("HueLightPollingOrchestrator", null);
+            if (hueLight.LightState.On)
+            {
+                hueLight.LightState.HexColor = hexColor;
+                log.LogCritical("Light state was on, monitor proceeding.");
+                result.OkObjectHueResult = await context.CallActivityAsync<string>("SetLightToColor", hueLight);
+                result.DateTimeWhenMonitorExecuted = $"{context.CurrentUtcDateTime.ToLongDateString()} {context.CurrentUtcDateTime.ToLongTimeString()}";
+                break;
+            }
+            
+            var idleTime = context.CurrentUtcDateTime.AddSeconds(5);
+            await context.CreateTimer(idleTime, CancellationToken.None);
+        }
         
-        log.LogInformation($"Started orchestration with ID = '{instanceId}");
-
-        // TODO vad gör den här egentligen? Använder jag den även i mina andra functions?
-        return starter.CreateCheckStatusResponse(req, instanceId);
+        log.LogInformation($"Monitor reached expiration time. Current time is {context.CurrentUtcDateTime}");
+        return result;
     }
 }

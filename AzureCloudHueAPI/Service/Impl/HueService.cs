@@ -105,6 +105,25 @@ namespace AzureCloudHue.Service.Impl
             var command = new LightCommandMapper(light).MapLightStateToCommand(hueLight.LightState);
             return await _hueClient.SendCommandAsync(command, new List<string>() {hueLight.LightId.ToString()});
         }
+
+        public async Task<HueLight> GetStateOfLamp(string lightId)
+        {
+            var light = await _hueClient.GetLightAsync(lightId);
+            HueLight hueLight = new HueLight();
+            hueLight.LightId = Convert.ToInt32(lightId);
+
+            LightState lightState = new LightState();
+            lightState.Brightness = light.State.Brightness;
+            lightState.On = light.State.On;
+            double[] xyColorCoordinates = light.State.ColorCoordinates;
+            RGBColor color = HueColorConverter.XYToRgb(new CIE1931Point(xyColorCoordinates[0], xyColorCoordinates[1]), null);
+
+            lightState.HexColor = color.ToHex();
+
+            hueLight.LightState = lightState;
+
+            return hueLight;
+        }
         
         public async Task<string> SetGroupLightsRotation(HueGroupRotation hueGroupRotation)
         {

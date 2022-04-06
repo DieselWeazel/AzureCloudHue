@@ -6,13 +6,13 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace AzureCloudHue.Function;
+namespace AzureCloudHue.FanOutFanInFunction;
 
-public class GetHueLightStatesFunction
+public class DeserializeHueLights
 {
-
-    [FunctionName("GetHueLightStates")]
-    public static List<HueLight> GetHueLightStates([ActivityTrigger] JArray bsObj,
+    
+    [FunctionName("DeserializeHueLights")]
+    public static List<HueLight> DeserializeHueLightsFunction([ActivityTrigger] JArray bsObj,
         ILogger log)
     {
         var hueLights = JsonConvert.DeserializeObject<List<HueLight>>(bsObj.ToString());

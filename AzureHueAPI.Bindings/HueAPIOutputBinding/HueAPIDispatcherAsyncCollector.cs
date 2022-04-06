@@ -3,7 +3,7 @@ using AzureCloudHue.Model;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 
-namespace HueClient.Bindings;
+namespace HueClient.Bindings.HueAPIOutputBinding;
 
 public class HueAPIDispatcherAsyncCollector : IAsyncCollector<HueLight>
 {
@@ -22,8 +22,9 @@ public class HueAPIDispatcherAsyncCollector : IAsyncCollector<HueLight>
     
     public async Task AddAsync(HueLight item, CancellationToken cancellationToken = new CancellationToken())
     {
-        // TODO desired endpoint?
-        // Is now SetStateOfIndividualLamp always.
+        // TODO could perhaps a desired endpoint be passed in as well?
+        // Right now it's always SetStateOfIndividualLamp
+        // This will affect the payload however, but it could easily just be a list of HueLights either way.
         HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post,
             $"{_azureHueApiAttribute.Address}SetStateOfIndividualLamp");
 

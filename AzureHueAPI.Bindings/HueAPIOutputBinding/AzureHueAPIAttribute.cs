@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.WebJobs.Description;
 
-namespace HueClient.Bindings;
+namespace HueClient.Bindings.HueAPIOutputBinding;
 
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
 [Binding]

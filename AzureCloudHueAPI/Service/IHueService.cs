@@ -16,7 +16,6 @@ namespace AzureCloudHue.Service
         Task<HueResults> SetIndividualLight(HueLight hueLight);
         
         Task<string> SetGroupLightsRotation(HueGroupRotation hueGroupRotation);
-        
-        
+        Task<HueLight> GetStateOfLamp(string lightId);
     }
 }
