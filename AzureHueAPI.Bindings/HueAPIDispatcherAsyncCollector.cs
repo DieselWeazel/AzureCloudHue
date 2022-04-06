@@ -22,6 +22,8 @@ public class HueAPIDispatcherAsyncCollector : IAsyncCollector<HueLight>
     
     public async Task AddAsync(HueLight item, CancellationToken cancellationToken = new CancellationToken())
     {
+        // TODO desired endpoint?
+        // Is now SetStateOfIndividualLamp always.
         HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post,
             $"{_azureHueApiAttribute.Address}SetStateOfIndividualLamp");
 

@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using AzureCloudHue.Model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AzureCloudHue.Function;
 
-public static class DurableHueFunctionOrchestrator
+public static class FanInFanOutOrchestrator
 {
     [FunctionName("DurableHueFunctionOrchestrator")]
     public static async Task<List<string>> RunOrchestrator(
@@ -38,23 +34,5 @@ public static class DurableHueFunctionOrchestrator
         outputs.Add(addedToCosmosDB);
         
         return outputs;
-    }
-
-    [FunctionName("DurableHueFunctionOrchestrator_HttpStart")]
-    public static async Task<HttpResponseMessage> HttpStart(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]
-        HttpRequestMessage req,
-        [DurableClient] IDurableOrchestrationClient starter,
-        ILogger log)
-    {
-        HttpContent requestContent = req.Content;
-        string jsonContent = requestContent.ReadAsStringAsync().Result;
-        JArray bsObj = JsonConvert.DeserializeObject<JArray>(jsonContent);
-
-        string instanceId = await starter.StartNewAsync("DurableHueFunctionOrchestrator", bsObj);
-
-        log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
-
-        return starter.CreateCheckStatusResponse(req, instanceId);
     }
 }

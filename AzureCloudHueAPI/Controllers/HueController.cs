@@ -42,9 +42,15 @@ namespace AzureCloudHue.Controllers
         {
             return await _hueService.SetIndividualLightRotation(hueLightRotation);
         }
+        
+        [HttpPost("/SetRotationStateOfIndividualLampBlocking")]
+        public async Task<List<HueResults>> SetRotationStateOfIndividualLampBlocking([FromBody] HueLightRotation hueLightRotation)
+        {
+            return await _hueService.SetIndividualLightRotationBlocking(hueLightRotation);
+        }
 
-        [HttpPost("/SetStateOfGroup")]
-        public async Task<string> SetStateOfGroup([FromBody] HueGroupRotation hueGroupRotation)
+        [HttpPost("/SetRotationStateOfGroup")]
+        public async Task<string> SetRotationStateOfGroup([FromBody] HueGroupRotation hueGroupRotation)
         {
             return await _hueService.SetGroupLightsRotation(hueGroupRotation);
         }

@@ -66,20 +66,25 @@ namespace AzureCloudHue.Service.Impl
 
         public async Task<List<HueResults>> SetIndividualLightRotation(HueLightRotation hueLightRotation)
         {
-            // TODO -> Om det går att få fram lampan före, så lägg Command här
-            // Och hämta tillståndet (on/off) först.
-            
-            // BaseHueApi#public Task<HueResponse<Light>> GetLights() => HueGetRequest<Light>(LightUrl);
-            // ^ Denna kan hämta lampan bättre.
-            // Kan vara bra för att checka om lampan är tänd!
-            // Light light = await _client.GetLightAsync(hueLight.LightId.ToString());
-            
-            // LightState lightState = hueLight.LightState;
-            // if (light.On != null)
-            // {
-                // command.On = lightState.On;
-            // }
-            
+         
+            // TODO den här är också blocking, kalla på HueThread i denna likt i Group.
+            List<HueResults> hueResults = new List<HueResults>();
+            for (int i = 0; i < hueLightRotation.LightStates.Count; i++)
+            {
+                // TODO behöver inte hämta tidigare lightstate efter index 0 egentligen.
+                var light = await _hueClient.GetLightAsync(hueLightRotation.LightId.ToString());
+                var command = new LightCommandMapper(light).MapLightStateToCommand(hueLightRotation.LightStates[i]);
+                var hueResult = await _hueClient.SendCommandAsync(command, new List<string>() {hueLightRotation.LightId.ToString()});
+                hueResults.Add(hueResult);
+                var sleepInInt = Convert.ToInt32(hueLightRotation.LightStates[i].TransitionTimeInMs);
+                Thread.Sleep(sleepInInt);
+            }
+
+            return hueResults;
+        }
+        
+        public async Task<List<HueResults>> SetIndividualLightRotationBlocking(HueLightRotation hueLightRotation)
+        {
             List<HueResults> hueResults = new List<HueResults>();
             for (int i = 0; i < hueLightRotation.LightStates.Count; i++)
             {
@@ -146,18 +151,9 @@ namespace AzureCloudHue.Service.Impl
 
         private async Task<HueResults> SetLightList(LightState lightState, List<string> lights)
         {
+            // TODO LightCommandMapper!
             LightCommand command = new LightCommand();
 
-            // BaseHueApi#public Task<HueResponse<Light>> GetLights() => HueGetRequest<Light>(LightUrl);
-            // ^ Denna kan hämta lampan bättre.
-            // Kan vara bra för att checka om lampan är tänd!
-            // Light light = await _client.GetLightAsync(hueLight.LightId.ToString());
-            
-            // if (light.On != null)
-            // {
-            // command.On = lightState.On;
-            // }
-            
             CIE1931Point point = HueColorConverter.RgbToXY(new RGBColor(lightState.HexColor), null);
             command.SetColor(point.x, point.y);
             

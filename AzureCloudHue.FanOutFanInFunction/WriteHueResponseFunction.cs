@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace AzureCloudHue.Function;
 
-public static class WriteHueResponse
+public static class WriteHueResponseFunction
 {
     [FunctionName("AddHueResultToCosmosDB")]
     public static async Task<string> Run(

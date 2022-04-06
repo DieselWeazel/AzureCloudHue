@@ -12,9 +12,11 @@ namespace AzureCloudHue.Service
         Task<HueResults> SetAllLights(LightState lightState);
 
         Task<List<HueResults>> SetIndividualLightRotation(HueLightRotation hueLightRotation);
-
+        Task<List<HueResults>> SetIndividualLightRotationBlocking(HueLightRotation hueLightRotation);
         Task<HueResults> SetIndividualLight(HueLight hueLight);
         
         Task<string> SetGroupLightsRotation(HueGroupRotation hueGroupRotation);
+        
+        
     }
 }

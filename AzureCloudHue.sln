@@ -8,6 +8,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCloudHue.FanOutFanInFu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureHueAPI.Bindings", "AzureHueAPI.Bindings\AzureHueAPI.Bindings.csproj", "{0A88251F-8691-4933-BBEA-222882AE053D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCloudHue.AsyncPollingFunction", "AzureCloudHue.AsyncPollingFunction\AzureCloudHue.AsyncPollingFunction.csproj", "{3F3846A8-94FC-47B9-B2EE-722D09B32437}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCloudHue.MonitorFunction", "AzureCloudHue.MonitorFunction\AzureCloudHue.MonitorFunction.csproj", "{E6226539-FCAF-4EE2-AD86-90FC394DC58E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{0A88251F-8691-4933-BBEA-222882AE053D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A88251F-8691-4933-BBEA-222882AE053D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A88251F-8691-4933-BBEA-222882AE053D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F3846A8-94FC-47B9-B2EE-722D09B32437}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F3846A8-94FC-47B9-B2EE-722D09B32437}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F3846A8-94FC-47B9-B2EE-722D09B32437}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F3846A8-94FC-47B9-B2EE-722D09B32437}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6226539-FCAF-4EE2-AD86-90FC394DC58E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6226539-FCAF-4EE2-AD86-90FC394DC58E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6226539-FCAF-4EE2-AD86-90FC394DC58E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6226539-FCAF-4EE2-AD86-90FC394DC58E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
