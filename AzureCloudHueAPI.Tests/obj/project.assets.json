@@ -5461,23 +5461,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jonathan.harr\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\jonat\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj",
+      "projectUniqueName": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj",
       "projectName": "AzureCloudHueAPI.Tests",
-      "projectPath": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj",
-      "packagesPath": "C:\\Users\\jonathan.harr\\.nuget\\packages\\",
-      "outputPath": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\obj\\",
+      "projectPath": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj",
+      "packagesPath": "C:\\Users\\jonat\\.nuget\\packages\\",
+      "outputPath": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\jonathan.harr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\jonat\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -5491,8 +5492,8 @@
         "net5.0": {
           "targetAlias": "net5.0",
           "projectReferences": {
-            "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj": {
-              "projectPath": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj"
+            "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj": {
+              "projectPath": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj"
             }
           }
         }

@@ -18,5 +18,6 @@ public class GetHueLightStatesFunction
         var hueLights = JsonConvert.DeserializeObject<List<HueLight>>(bsObj.ToString());
         log.LogInformation($"Deserializing HueLights of length {hueLights.Count}");
         return hueLights;
+        
     }
 }
