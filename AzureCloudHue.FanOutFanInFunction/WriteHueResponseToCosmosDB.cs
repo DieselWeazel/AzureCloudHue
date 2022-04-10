@@ -10,6 +10,8 @@ namespace AzureCloudHue.Function;
 
 public static class WriteHueResponseToCosmosDB
 {
+    
+    // TODO borde använda Hue Databasen!
     [FunctionName("AddHueResultToCosmosDB")]
     public static async Task<string> WriteHueResponseFunction(
         [ActivityTrigger]string okObjectJson,
@@ -25,6 +27,20 @@ public static class WriteHueResponseToCosmosDB
             id = Guid.NewGuid().ToString(), okObjectJson
         });
 
-        return JsonConvert.SerializeObject(new OkObjectResult("The Hue Result was stored succesfully!"));
+        // TODO, egentligen borde väl den här ha ett OkObject som representerar
+        // att vi lyckats lagra i Cosmos, 
+        // som i sin tur håller vad den lagrat?
+        
+        // Dessutom formateras den lite uselt
+        /*
+         * 1. Massor av Escapes,
+         *
+         * 2. Inget radbryt mellan diverse ändringar,
+         * success: lights/10/state/transitiontime, sen en till med state/on
+         *
+         * 3. Inget radbryt per lampa.
+         * String.Join borde med andra ord göra ny rad åtminstone för det.
+         */
+        return okObjectJson;
     }
 }
