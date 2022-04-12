@@ -23,15 +23,18 @@ public static class FanInFanOutOrchestrator
         var hueLights = await context.CallActivityAsync<List<HueLight>>("DeserializeHueLights", jArrayOfLightsToChange);
 
         // TODO overloaded method igen..
-        var tokenKeyValuePair = await context.CallActivityAsync<KeyValuePair<Token, RefreshToken>>("TokenRetriever", "null");
-        var token = tokenKeyValuePair.Key;
-        var dateTimeExpiration = context.CurrentUtcDateTime.AddSeconds(token.ExpiresIn);
-
-        log.LogInformation($"Date time when expire: {dateTimeExpiration}");
+        var oAuth2Token = await context.CallActivityAsync<OAuth2Token>("TokenRetriever", "null");
+        
+        // var dateTimeExpiration = context.CurrentUtcDateTime.AddSeconds(token.AccessTokenExpiresIn);
+        // var dateTimeRefreshTokenExpiresIn = context.CurrentUtcDateTime.AddSeconds(token.RefreshTokenExpiresIn);
+        
+        // catch (FunctionFailedException) (kika på kanske)
+        
+        // log.LogInformation($"Date time when expire: {dateTimeExpiration}");
         var parallelTasks = new List<Task<string>>();
         for (int i = 0; i < hueLights.Count; i++)
         {
-            var tokenWithHueLight = new TokenWithHueLight(hueLights[i], token);
+            var tokenWithHueLight = new TokenWithHueLight(hueLights[i], oAuth2Token);
             Task<string> task = context.CallActivityAsync<string>("HueLamp_SetLightState", tokenWithHueLight);
             parallelTasks.Add(task);
         }
@@ -41,9 +44,10 @@ public static class FanInFanOutOrchestrator
         string concatenatedResponses = String.Join(String.Empty, results);
         var addedToCosmosDB = await context.CallActivityAsync<string>("AddHueResultToCosmosDB", concatenatedResponses);
 
-        var refreshToken = tokenKeyValuePair.Value;
-        refreshToken.access_token_expires_in = dateTimeExpiration.ToString();
-        var tokenWrittenToCosmosDB = await context.CallActivityAsync<string>("WriteTokenToCosmosDB", refreshToken);
+        // var refreshToken = tokenKeyValuePair.Value;
+        // refreshToken.access_token_expires_in = dateTimeExpiration.ToString();
+        // refreshToken.refresh_token_expires_in = dateTimeRefreshTokenExpiresIn.ToString();
+        // var tokenWrittenToCosmosDB = await context.CallActivityAsync<string>("WriteTokenToCosmosDB", refreshToken);
         
         // outputs.Add(tokenWrittenToCosmosDB) ?
         outputs.Add(addedToCosmosDB);

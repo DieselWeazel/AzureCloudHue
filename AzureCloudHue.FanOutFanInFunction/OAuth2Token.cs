@@ -2,7 +2,7 @@
 
 namespace AzureCloudHue.FanOutFanInFunction;
 
-public class Token
+public class OAuth2Token
 {
     [JsonProperty("access_token")]
     public string AccessToken {
@@ -15,7 +15,14 @@ public class Token
         set;
     }
     [JsonProperty("refresh_token_expires_in")]
-    public int ExpiresIn {
+    public int RefreshTokenExpiresIn {
+        get;
+        set;
+    }
+
+    [JsonProperty("access_token_expires_in")]
+    public int AccessTokenExpiresIn
+    {
         get;
         set;
     }

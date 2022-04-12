@@ -7,9 +7,9 @@ namespace AzureCloudHue.FanOutFanInFunction;
  */
 public class TokenWithHueLight
 {
- public Token Token { get; set; }
+ public OAuth2Token Token { get; set; }
  public HueLight HueLight { get; set; }
- public TokenWithHueLight(HueLight hueLight, Token token)
+ public TokenWithHueLight(HueLight hueLight, OAuth2Token token)
  {
   HueLight = hueLight;
   Token = token;

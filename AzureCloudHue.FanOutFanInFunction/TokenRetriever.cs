@@ -23,17 +23,17 @@ namespace AzureCloudHue.FanOutFanInFunction;
  */
 public class TokenRetriever
 {
-    private static string REFRESH_TOKEN_URL = "https://api.meethue.com/oauth2/refresh?grant_type=refresh_token";
+    // private static string REFRESH_TOKEN_URL = "https://api.meethue.com/oauth2/refresh?grant_type=refresh_token";
     
     // refresh_token
     // access_token_expires
     
     [FunctionName("TokenRetriever")]
-    public static async Task<KeyValuePair<Token, RefreshToken>> TokenRetrieverFunction([ActivityTrigger] string dummyString,
+    public static async Task<OAuth2Token> TokenRetrieverFunction([ActivityTrigger] string dummyString,
         [CosmosDB(databaseName: "Hue",
-            collectionName: "RefreshToken",
-            SqlQuery = "SELECT * FROM RefreshToken",
-            ConnectionStringSetting = "CosmosDbConnectionString")] IEnumerable<RefreshToken> refreshTokens,
+            collectionName: "OAuth2Token",
+            SqlQuery = "SELECT * FROM OAuth2Token",
+            ConnectionStringSetting = "CosmosDbConnectionString")] IEnumerable<OAuth2Token> refreshTokens,
         ILogger log)
     {
         HttpClient client = new HttpClient();
@@ -44,13 +44,14 @@ public class TokenRetriever
             throw new ArgumentException("No Tokens found!");
         }
 
-        RefreshToken refreshTokenFromDB = null;
-        foreach (RefreshToken refToken in refreshTokens)
+        OAuth2Token oauth2Token = null;
+        foreach (OAuth2Token refToken in refreshTokens)
         {
-            refreshTokenFromDB = refToken;
+            oauth2Token = refToken;
         }
 
-        if (refreshTokenFromDB is null)
+        
+        if (oauth2Token is null)
         {
             throw new ArgumentException("Token was null.");
         }
@@ -61,47 +62,54 @@ public class TokenRetriever
         
         // Det kan vara möjligt att förnya token i någon pipeline också förvisso kanske
         // som i sin tur kör något Selenium trams. Men det känns overkill.
-        var decryptedRefreshToken = DecryptRefreshToken(refreshTokenFromDB.refresh_token);
+        // var decryptedRefreshToken = DecryptRefreshToken(oauth2Token.RefreshToken);
         
-        var refreshTokenForm = new Dictionary < string,
-            string > {
-            {
-                "refresh_token",
-                decryptedRefreshToken
-                // "n6W54qj6Gl7FGtQHCWQ1czQs1VRLgDNf"
-            }
-        };
-        
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, REFRESH_TOKEN_URL) { Content = new FormUrlEncodedContent(refreshTokenForm) };
-        requestMessage.Content = new FormUrlEncodedContent(refreshTokenForm);
-        
-        var byteArray = Encoding.ASCII.GetBytes("L0aAagc4uACK71LBexoYr5AuGVkTeGHR:L34YTv3nU8KZMNh1");
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-        
-        var tokenResponse = await client.SendAsync(requestMessage);
-
-        var streamReader = new StreamReader(tokenResponse.Content.ReadAsStream());
-        string content = await streamReader.ReadToEndAsync();
-        log.LogInformation($"Token Content {content}");
-        var token = JsonConvert.DeserializeObject<Token>(content);
+        // var refreshTokenForm = new Dictionary < string,
+        //     string > {
+        //     {
+        //         "refresh_token",
+        //         decryptedRefreshToken
+        //         // "n6W54qj6Gl7FGtQHCWQ1czQs1VRLgDNf"
+        //     }
+        // };
+        //
+        // var requestMessage = new HttpRequestMessage(HttpMethod.Post, REFRESH_TOKEN_URL) { Content = new FormUrlEncodedContent(refreshTokenForm) };
+        // requestMessage.Content = new FormUrlEncodedContent(refreshTokenForm);
+        //
+        // var byteArray = Encoding.ASCII.GetBytes("L0aAagc4uACK71LBexoYr5AuGVkTeGHR:L34YTv3nU8KZMNh1");
+        // client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+        //
+        // var tokenResponse = await client.SendAsync(requestMessage);
+        //
+        // var streamReader = new StreamReader(tokenResponse.Content.ReadAsStream());
+        // string content = await streamReader.ReadToEndAsync();
+        // log.LogInformation($"Token Content {content}");
+        // var token = JsonConvert.DeserializeObject<OAuth2Token>(content);
 
         // Encryption
-        var refreshToken = EncryptRefreshToken(token.RefreshToken);
-        log.LogInformation($"RefreshToken =({refreshToken})");
-
-        string publicKey = "12345678";
-        string secretKey = "87654321";
+        // var refreshToken = EncryptRefreshToken(token.RefreshToken);
+        // var accessToken = EncryptRefreshToken(token.AccessToken);
         
+        // log.LogInformation($"RefreshToken =({refreshToken})");
+
         // TODO den här mappningen höll ej, förmodligen för att ExpiresIn inte matchar refresh_token_expires_in, 
         // eller access_token_expires_in
         
         // TODO, den kanske funkar nu?
-        log.LogInformation($"Token retirved, expires in {token.ExpiresIn}");
+        oauth2Token.AccessToken = DecryptRefreshToken(oauth2Token.AccessToken);
+        oauth2Token.RefreshToken = DecryptRefreshToken(oauth2Token.RefreshToken);
+
+        log.LogInformation($"Access token = {oauth2Token.AccessToken}");
+        log.LogInformation($"Refresh token = {oauth2Token.RefreshToken}");
+
+        
+        log.LogInformation($"Token retirved, expires in {oauth2Token.AccessTokenExpiresIn}");
 
         // Sätt om refreshToken, detta borde rent tekniskt göras separat men whatever for now
-        refreshTokenFromDB.refresh_token = refreshToken;
+        // oauth2Token.refresh_token = refreshToken;
+        // oauth2Token.access_token = accessToken;
         
-        return new KeyValuePair<Token, RefreshToken>(token, refreshTokenFromDB);
+        return oauth2Token;
     }
     
     
