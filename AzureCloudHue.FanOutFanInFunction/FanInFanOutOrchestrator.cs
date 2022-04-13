@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AzureCloudHue.Model;
-using Microsoft.AspNetCore.Mvc;
+using AzureCloudHue.Service;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
@@ -19,27 +19,51 @@ public static class FanInFanOutOrchestrator
     {
         var outputs = new List<string>();
         var jArrayOfLightsToChange = context.GetInput<JArray>();
-        
-        var hueLights = await context.CallActivityAsync<List<HueLight>>("DeserializeHueLights", jArrayOfLightsToChange);
-
-        // TODO overloaded method igen..
-        var oAuth2Token = await context.CallActivityAsync<OAuth2Token>("TokenRetriever", "null");
-        
-        // var dateTimeExpiration = context.CurrentUtcDateTime.AddSeconds(token.AccessTokenExpiresIn);
-        // var dateTimeRefreshTokenExpiresIn = context.CurrentUtcDateTime.AddSeconds(token.RefreshTokenExpiresIn);
-        
-        // catch (FunctionFailedException) (kika på kanske)
-        
-        // log.LogInformation($"Date time when expire: {dateTimeExpiration}");
-        var parallelTasks = new List<Task<string>>();
-        for (int i = 0; i < hueLights.Count; i++)
+        List<HueLight> hueLights;
+        try
         {
-            var tokenWithHueLight = new TokenWithHueLight(hueLights[i], oAuth2Token);
-            Task<string> task = context.CallActivityAsync<string>("HueLamp_SetLightState", tokenWithHueLight);
-            parallelTasks.Add(task);
+            hueLights = await context.CallActivityAsync<List<HueLight>>("DeserializeHueLights", jArrayOfLightsToChange);
+
+        }
+        catch (FunctionFailedException e)
+        {
+            log.LogError($"Error when parsing: {e.Message}");
+            outputs.Add(e.Message);
+            throw;
+        }
+
+        string accessToken = "";
+        try
+        {
+            // TODO overloaded method igen..
+            accessToken = await context.CallActivityAsync<string>("TokenRetriever", "null");
+        }
+        catch (FunctionFailedException e)
+        {
+            // log.LogError($"Error when retrieving token: {e.Message}");
+            outputs.Add(e.Message);
+            throw;
         }
         
-        var results = await Task.WhenAll(parallelTasks);
+        string[] results;
+        try
+        {
+            var parallelTasks = new List<Task<string>>();
+            for (int i = 0; i < hueLights.Count; i++)
+            {
+                var tokenWithHueLight = new TokenWithHueLight(hueLights[i], accessToken);
+                Task<string> task = context.CallActivityAsync<string>("HueLamp_SetLightState", tokenWithHueLight);
+                parallelTasks.Add(task);
+            }
+
+            results = await Task.WhenAll(parallelTasks);
+        }
+        catch (FunctionFailedException fe)
+        {
+            outputs.Add(fe.Message);
+            throw;
+        }
+
 
         string concatenatedResponses = String.Join(String.Empty, results);
         var addedToCosmosDB = await context.CallActivityAsync<string>("AddHueResultToCosmosDB", concatenatedResponses);

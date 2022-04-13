@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace AzureCloudHue.FanOutFanInFunction;
+namespace AzureCloudHue.Service;
 
 public class OAuth2Token
 {

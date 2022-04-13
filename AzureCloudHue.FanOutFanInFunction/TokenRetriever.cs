@@ -6,6 +6,11 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using AzureCloudHue.Service;
+using HueClient.Bindings.HueAPIOutputBinding;
+using HueClient.Bindings.OAuth2DecryptorBinding;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -14,102 +19,35 @@ using Newtonsoft.Json;
 
 namespace AzureCloudHue.FanOutFanInFunction;
 
-/*
- * Secure OAuth 2.0 On-Behalf-Of refresh tokens for web services
- * https://docs.microsoft.com/en-us/azure/architecture/example-scenario/secrets/secure-refresh-tokens
- * "Azure Pipelines is a convenient place to add your key rotation strategy, if you're already using Pipelines for infrastructure-as-code (IaC)"
- *
- * (Men, om man redan har en pipeline så kunde de vara lika bra att använda den)
- */
 public class TokenRetriever
 {
-    // private static string REFRESH_TOKEN_URL = "https://api.meethue.com/oauth2/refresh?grant_type=refresh_token";
-    
-    // refresh_token
-    // access_token_expires
-    
+
     [FunctionName("TokenRetriever")]
-    public static async Task<OAuth2Token> TokenRetrieverFunction([ActivityTrigger] string dummyString,
-        [CosmosDB(databaseName: "Hue",
-            collectionName: "OAuth2Token",
+    public static async Task<string> TokenRetrieverFunction([ActivityTrigger] string dummyString,
+        [CosmosDB("Hue",
+            "OAuth2Token",
             SqlQuery = "SELECT * FROM OAuth2Token",
             ConnectionStringSetting = "CosmosDbConnectionString")] IEnumerable<OAuth2Token> refreshTokens,
+        [HueRemoteOAuth2Decryptor
+            (PublicKeyVaultKey = "%public_key%", SecretKeyVaultKey = "%secret_key%",
+                VaultName = "%KEY_VAULT_NAME%")] HueRemoteOAuth2DecryptorFluentBinding hueRemoteOAuth2Decryptor,
         ILogger log)
     {
-        HttpClient client = new HttpClient();
-        
-        if (refreshTokens is null)  
-        {
-            // return new NotFoundResult();
-            throw new ArgumentException("No Tokens found!");
-        }
-
-        OAuth2Token oauth2Token = null;
+        OAuth2Token oAuth2Token = null;
         foreach (OAuth2Token refToken in refreshTokens)
         {
-            oauth2Token = refToken;
+            oAuth2Token = refToken;
         }
-
         
-        if (oauth2Token is null)
+        if (oAuth2Token is null)
         {
-            throw new ArgumentException("Token was null.");
+            throw new ArgumentException("No token has been found.");
         }
-        // var refreshTokenFromDB = refreshTokens.GetEnumerator().T; 
         
-        // TODO om expiration date har passerat
-        // så måste den här kasta ett exception
+        var accessToken = await hueRemoteOAuth2Decryptor.DecryptAccessToken(oAuth2Token);
+        log.LogInformation($"Access token = {accessToken}");
         
-        // Det kan vara möjligt att förnya token i någon pipeline också förvisso kanske
-        // som i sin tur kör något Selenium trams. Men det känns overkill.
-        // var decryptedRefreshToken = DecryptRefreshToken(oauth2Token.RefreshToken);
-        
-        // var refreshTokenForm = new Dictionary < string,
-        //     string > {
-        //     {
-        //         "refresh_token",
-        //         decryptedRefreshToken
-        //         // "n6W54qj6Gl7FGtQHCWQ1czQs1VRLgDNf"
-        //     }
-        // };
-        //
-        // var requestMessage = new HttpRequestMessage(HttpMethod.Post, REFRESH_TOKEN_URL) { Content = new FormUrlEncodedContent(refreshTokenForm) };
-        // requestMessage.Content = new FormUrlEncodedContent(refreshTokenForm);
-        //
-        // var byteArray = Encoding.ASCII.GetBytes("L0aAagc4uACK71LBexoYr5AuGVkTeGHR:L34YTv3nU8KZMNh1");
-        // client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-        //
-        // var tokenResponse = await client.SendAsync(requestMessage);
-        //
-        // var streamReader = new StreamReader(tokenResponse.Content.ReadAsStream());
-        // string content = await streamReader.ReadToEndAsync();
-        // log.LogInformation($"Token Content {content}");
-        // var token = JsonConvert.DeserializeObject<OAuth2Token>(content);
-
-        // Encryption
-        // var refreshToken = EncryptRefreshToken(token.RefreshToken);
-        // var accessToken = EncryptRefreshToken(token.AccessToken);
-        
-        // log.LogInformation($"RefreshToken =({refreshToken})");
-
-        // TODO den här mappningen höll ej, förmodligen för att ExpiresIn inte matchar refresh_token_expires_in, 
-        // eller access_token_expires_in
-        
-        // TODO, den kanske funkar nu?
-        oauth2Token.AccessToken = DecryptRefreshToken(oauth2Token.AccessToken);
-        oauth2Token.RefreshToken = DecryptRefreshToken(oauth2Token.RefreshToken);
-
-        log.LogInformation($"Access token = {oauth2Token.AccessToken}");
-        log.LogInformation($"Refresh token = {oauth2Token.RefreshToken}");
-
-        
-        log.LogInformation($"Token retirved, expires in {oauth2Token.AccessTokenExpiresIn}");
-
-        // Sätt om refreshToken, detta borde rent tekniskt göras separat men whatever for now
-        // oauth2Token.refresh_token = refreshToken;
-        // oauth2Token.access_token = accessToken;
-        
-        return oauth2Token;
+        return accessToken;
     }
     
     
@@ -117,18 +55,18 @@ public class TokenRetriever
     // Refresh_token_Expires_in
     // är nog max tiden jag kan använda access-token
     // Så den bör sparas eller sparas som en "giltig till" grej!
-    static string DecryptRefreshToken(string refreshTokenToDecrypt)
+    static string DecryptRefreshToken(string refreshTokenToDecrypt, string secretKey, string publicKey)
     {
         try
         {
             string ToReturn = "";
-            string publickey = Environment.GetEnvironmentVariable("public_key");
-            string secretkey = Environment.GetEnvironmentVariable("secret_key");
+            // string publickey = Environment.GetEnvironmentVariable("public_key");
+            // string secretkey = Environment.GetEnvironmentVariable("secret_key");
 
             byte[] privatekeyByte = { };
-            privatekeyByte = System.Text.Encoding.UTF8.GetBytes(secretkey);
+            privatekeyByte = System.Text.Encoding.UTF8.GetBytes(secretKey);
             byte[] publickeybyte = { };
-            publickeybyte = System.Text.Encoding.UTF8.GetBytes(publickey);
+            publickeybyte = System.Text.Encoding.UTF8.GetBytes(publicKey);
             MemoryStream ms = null;
             CryptoStream cs = null;
             byte[] inputbyteArray = new byte[refreshTokenToDecrypt.Replace(" ", "+").Length];

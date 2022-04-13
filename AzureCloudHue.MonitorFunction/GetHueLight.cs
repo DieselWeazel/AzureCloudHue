@@ -1,5 +1,6 @@
 ﻿using AzureCloudHue.Model;
 using HueClient.Bindings.HueAPIInputBinding;
+using HueClient.Bindings.OAuth2DecryptorBinding;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;

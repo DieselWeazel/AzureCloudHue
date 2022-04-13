@@ -61,8 +61,17 @@ public class SetLightState
         var url = $"https://api.meethue.com/bridge/{username}/lights/{hueLight.LightId}/state";
         var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
         requestMessage.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-        _client.DefaultRequestHeaders.Authorization = newAuthenticationHeaderValue("Bearer", tokenWithHueLight.Token.AccessToken);
+        _client.DefaultRequestHeaders.Authorization = newAuthenticationHeaderValue("Bearer", tokenWithHueLight.AccessToken);
+        
+        
         var responseMessage = await _client.SendAsync(requestMessage);
+
+        if (!responseMessage.IsSuccessStatusCode)
+        {
+            log.LogInformation($"Could not Set Hue Light, status code = {responseMessage.StatusCode}");
+            throw new FunctionFailedException($"Could not set Hue lamp with id {tokenWithHueLight.HueLight.LightId},\n\r" +
+                                              $"could not call Hue Bridge. Status code = {responseMessage.StatusCode}");
+        }
         
         var streamReader = new StreamReader(responseMessage.Content.ReadAsStream());
         string content = await streamReader.ReadToEndAsync();

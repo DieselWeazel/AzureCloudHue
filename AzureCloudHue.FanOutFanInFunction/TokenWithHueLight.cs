@@ -1,4 +1,5 @@
 ﻿using AzureCloudHue.Model;
+using AzureCloudHue.Service;
 
 namespace AzureCloudHue.FanOutFanInFunction;
 
@@ -7,12 +8,11 @@ namespace AzureCloudHue.FanOutFanInFunction;
  */
 public class TokenWithHueLight
 {
- public OAuth2Token Token { get; set; }
- public HueLight HueLight { get; set; }
- public TokenWithHueLight(HueLight hueLight, OAuth2Token token)
- {
-  HueLight = hueLight;
-  Token = token;
- }
- 
+      public string AccessToken { get; }
+      public HueLight HueLight { get; }
+      public TokenWithHueLight(HueLight hueLight, string accessToken)
+      {
+       HueLight = hueLight;
+       AccessToken = accessToken;
+      }
 }
