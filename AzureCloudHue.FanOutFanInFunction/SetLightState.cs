@@ -28,6 +28,7 @@ public class SetLightState
         [AzureHueAPI(Address = "%HueAPIAddress%")]IAsyncCollector<HueLight> bridge,
         ILogger log)
     {
+        // var token = _memoryCache.Get<Token>("token");
         HttpClient _client = new HttpClient();
         // log.LogInformation($"Setting light with id {hueLight.LightId}");
         // log.LogInformation($"New state to set is {hueLight.LightState}");

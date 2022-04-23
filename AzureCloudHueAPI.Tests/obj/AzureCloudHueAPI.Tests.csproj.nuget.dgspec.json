@@ -1,23 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj": {}
+    "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj": {}
   },
   "projects": {
-    "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj": {
+    "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj",
+        "projectUniqueName": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj",
         "projectName": "AzureCloudHueAPI.Tests",
-        "projectPath": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj",
-        "packagesPath": "C:\\Users\\jonathan.harr\\.nuget\\packages\\",
-        "outputPath": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\obj\\",
+        "projectPath": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\AzureCloudHueAPI.Tests.csproj",
+        "packagesPath": "C:\\Users\\jonat\\.nuget\\packages\\",
+        "outputPath": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\jonathan.harr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\jonat\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -31,8 +32,8 @@
           "net5.0": {
             "targetAlias": "net5.0",
             "projectReferences": {
-              "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj": {
-                "projectPath": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj"
+              "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj": {
+                "projectPath": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj"
               }
             }
           }
@@ -82,24 +83,25 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj": {
+    "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj",
+        "projectUniqueName": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj",
         "projectName": "AzureCloudHueAPI",
-        "projectPath": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj",
-        "packagesPath": "C:\\Users\\jonathan.harr\\.nuget\\packages\\",
-        "outputPath": "C:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\obj\\",
+        "projectPath": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\AzureCloudHueAPI.csproj",
+        "packagesPath": "C:\\Users\\jonat\\.nuget\\packages\\",
+        "outputPath": "D:\\Code\\CSharp\\AzureCloudHue\\AzureCloudHueAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\jonathan.harr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\jonat\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -164,7 +166,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     }
