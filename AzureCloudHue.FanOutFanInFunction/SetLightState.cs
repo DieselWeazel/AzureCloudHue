@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AzureCloudHue.Model;
 using HueClient.Bindings;
 using HueClient.Bindings.HueAPIOutputBinding;
+using HueClient.Bindings.OAuth2DecryptorBinding;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -20,33 +21,17 @@ namespace AzureCloudHue.FanOutFanInFunction;
 
 public class SetLightState
 {
-    // private string GET_LIGHTS_URL = "https://api.meethue.com/bridge/Rf7RBx4nC2TaSu9TKE1xeJnP49JCjflklG0earcn/lights/";
 
-    
     [FunctionName("HueLamp_SetLightState")]
     public async Task<string> SetLightStateFunction([ActivityTrigger] TokenWithHueLight tokenWithHueLight, 
-        [AzureHueAPI(Address = "%HueAPIAddress%")]IAsyncCollector<HueLight> bridge,
+        [Cryptographer
+            (VaultName = "%VAULT_NAME%", PublicKeyVaultKey = "%PUBLIC_KEY%", SecretKeyVaultKey = "%SECRET_KEY%")]
+        CryptographerFluentBinding cryptographer,
         ILogger log)
     {
-        // var token = _memoryCache.Get<Token>("token");
-        HttpClient _client = new HttpClient();
-        // log.LogInformation($"Setting light with id {hueLight.LightId}");
-        // log.LogInformation($"New state to set is {hueLight.LightState}");
-        //
-        // await bridge.AddAsync(hueLight);
-        //
-        // return JsonConvert.SerializeObject(new OkObjectResult(hueLight));
-
-        /*
-         {"on":true,
-        "xy": [
-                0.278757,
-                0.329774
-                    ],
-              "bri":192,
-              "transitiontime": 0
-            }
-         */
+        // TODO allt det här borde egentligen till sin egen binding med.
+        // Det skulle även se bra ut med username som då kan bli en miljövariabel.
+        HttpClient client = new HttpClient();
 
         var hueLight = tokenWithHueLight.HueLight;
 
@@ -62,10 +47,10 @@ public class SetLightState
         var url = $"https://api.meethue.com/bridge/{username}/lights/{hueLight.LightId}/state";
         var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
         requestMessage.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-        _client.DefaultRequestHeaders.Authorization = newAuthenticationHeaderValue("Bearer", tokenWithHueLight.AccessToken);
-        
-        
-        var responseMessage = await _client.SendAsync(requestMessage);
+        string accessToken = await cryptographer.GetDecryptedToken(tokenWithHueLight.Token.AccessToken);
+        client.DefaultRequestHeaders.Authorization = newAuthenticationHeaderValue("Bearer", accessToken);
+
+        var responseMessage = await client.SendAsync(requestMessage);
 
         if (!responseMessage.IsSuccessStatusCode)
         {
@@ -90,12 +75,11 @@ public class SetLightState
         // TODO Gamut är nu null.
         CIE1931Point point = HueColorConverter.RgbToXY(new RGBColor(lightState.HexColor), null);
 
-        var xyCoordinates = new double[] {point.x, point.y};
+        var xyCoordinates = new[] {point.x, point.y};
 
         LightStateJson lightStateJson = new LightStateJson
         (lightState.On, xyCoordinates, lightState.Brightness, (int) lightState.TransitionTimeInMs
         );
-        
         
         return JsonConvert.SerializeObject(lightStateJson);
     }

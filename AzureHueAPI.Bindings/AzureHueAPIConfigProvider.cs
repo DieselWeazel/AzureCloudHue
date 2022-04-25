@@ -1,17 +1,10 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
-using AzureCloudHue.Model;
-using AzureCloudHue.Service;
-using HueClient.Bindings.HueAPIInputBinding;
+﻿using HueClient.Bindings.HueAPIInputBinding;
+using HueClient.Bindings.HueAPIOutputBinding;
+using HueClient.Bindings.HueOAuth2Binding;
 using HueClient.Bindings.OAuth2DecryptorBinding;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host.Config;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
-namespace HueClient.Bindings.HueAPIOutputBinding;
+namespace HueClient.Bindings;
 
 internal class AzureHueAPIConfigProvider : IExtensionConfigProvider
 {
@@ -24,8 +17,11 @@ internal class AzureHueAPIConfigProvider : IExtensionConfigProvider
         var azureHueApiFetchLightStateBindingRule = context.AddBindingRule<CurrentLightStateBindingAttribute>();
         azureHueApiFetchLightStateBindingRule.BindToInput(attribute => new HueAPIFetcherFluentBinder(attribute).FetchLightStateFromAttribute());
         // context.
-        var hueRemoteOAuth2DecryptorBindingRule = context.AddBindingRule<HueRemoteOAuth2DecryptorAttribute>();
-        hueRemoteOAuth2DecryptorBindingRule.BindToInput(attribute => new HueRemoteOAuth2DecryptorFluentBinding(attribute));
+        var decryptorBindingRule = context.AddBindingRule<CryptographerAttribute>();
+        decryptorBindingRule.BindToInput(attribute => new CryptographerFluentBinding(attribute));
+
+        var hueOauth2BindingRule = context.AddBindingRule<HueRemoteOAuth2Attribute>();
+        hueOauth2BindingRule.BindToInput(attribute => new HueRemoteOAuth2FluentBinding(attribute));
         // TODO Validator?
         // https://www.tomfaltesek.com/azure-functions-input-validation/
     }

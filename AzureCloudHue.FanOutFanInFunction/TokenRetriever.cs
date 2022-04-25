@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
-using AzureCloudHue.Service;
-using HueClient.Bindings.HueAPIOutputBinding;
+using HueClient.Bindings.HueOAuth2Binding;
 using HueClient.Bindings.OAuth2DecryptorBinding;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
@@ -21,101 +14,100 @@ namespace AzureCloudHue.FanOutFanInFunction;
 
 public class TokenRetriever
 {
+    /*
+     *De här kanske inte är jätterelevant för min del, beror på slutlösning
+     *
+     * https://github.com/Azure/azure-functions-host/wiki/Managing-Connections
+     *
+     *
+     * DO NOT create a new client with every function invocation.
+        DO create a single, static client that can be used by every function invocation.
+        CONSIDER creating a single, static client in a shared helper class if different functions will be using the same service.
+     */
+
+    private static string REFRESH_TOKEN_URL = "https://api.meethue.com/oauth2/refresh?grant_type=refresh_token";
+
 
     [FunctionName("TokenRetriever")]
-    public static async Task<string> TokenRetrieverFunction([ActivityTrigger] string dummyString,
+    public static async Task<TokenDbEntityWithNewToken> TokenRetrieverFunction([ActivityTrigger] string orchestrationId,
         [CosmosDB("Hue",
-            "OAuth2Token",
-            SqlQuery = "SELECT * FROM OAuth2Token",
-            ConnectionStringSetting = "CosmosDbConnectionString")] IEnumerable<OAuth2Token> refreshTokens,
-        [HueRemoteOAuth2Decryptor
-            (PublicKeyVaultKey = "%public_key%", SecretKeyVaultKey = "%secret_key%",
-                VaultName = "%KEY_VAULT_NAME%")] HueRemoteOAuth2DecryptorFluentBinding hueRemoteOAuth2Decryptor,
+            "Token",
+            SqlQuery = "SELECT * FROM Token",
+            ConnectionStringSetting = "CosmosDbConnectionString")]
+        IEnumerable<RefreshToken> refreshTokens,
+        [HueRemoteOAuth2
+            (ClientId = "%CLIENT_ID%", ClientSecret = "%CLIENT_SECRET%")]
+        HueRemoteOAuth2FluentBinding hueRemoteOAuth2,
+        [Cryptographer
+            (VaultName = "%VAULT_NAME%", PublicKeyVaultKey = "%PUBLIC_KEY%", SecretKeyVaultKey = "%SECRET_KEY%")]
+        CryptographerFluentBinding cryptographer,
         ILogger log)
     {
-        OAuth2Token oAuth2Token = null;
-        foreach (OAuth2Token refToken in refreshTokens)
-        {
-            oAuth2Token = refToken;
-        }
-        
-        if (oAuth2Token is null)
-        {
-            throw new ArgumentException("No token has been found.");
-        }
-        
-        var accessToken = await hueRemoteOAuth2Decryptor.DecryptAccessToken(oAuth2Token);
-        log.LogInformation($"Access token = {accessToken}");
-        
-        return accessToken;
-    }
-    
-    
-    // TODO
-    // Refresh_token_Expires_in
-    // är nog max tiden jag kan använda access-token
-    // Så den bör sparas eller sparas som en "giltig till" grej!
-    static string DecryptRefreshToken(string refreshTokenToDecrypt, string secretKey, string publicKey)
-    {
-        try
-        {
-            string ToReturn = "";
-            // string publickey = Environment.GetEnvironmentVariable("public_key");
-            // string secretkey = Environment.GetEnvironmentVariable("secret_key");
+        log.LogInformation($"Token retriever initialized with orchestrationId {orchestrationId}");
+        log.LogInformation("Looking for token inside storage.");
 
-            byte[] privatekeyByte = { };
-            privatekeyByte = System.Text.Encoding.UTF8.GetBytes(secretKey);
-            byte[] publickeybyte = { };
-            publickeybyte = System.Text.Encoding.UTF8.GetBytes(publicKey);
-            MemoryStream ms = null;
-            CryptoStream cs = null;
-            byte[] inputbyteArray = new byte[refreshTokenToDecrypt.Replace(" ", "+").Length];
-            inputbyteArray = Convert.FromBase64String(refreshTokenToDecrypt.Replace(" ", "+"));
-            using (DESCryptoServiceProvider des = new DESCryptoServiceProvider())
-            {
-                ms = new MemoryStream();
-                cs = new CryptoStream(ms, des.CreateDecryptor(publickeybyte, privatekeyByte), CryptoStreamMode.Write);
-                cs.Write(inputbyteArray, 0, inputbyteArray.Length);
-                cs.FlushFinalBlock();
-                Encoding encoding = Encoding.UTF8;
-                ToReturn = encoding.GetString(ms.ToArray());
-            }
-            return ToReturn;
-        }
-        catch (Exception ae)
+        var foundTokenString = retrieveTokenFromStorage(orchestrationId, log);
+        if (foundTokenString != null)
         {
-            throw new Exception(ae.Message, ae.InnerException);
+            log.LogInformation("Found token in storage, using that instead.");
+            var foundToken = JsonConvert.DeserializeObject<TokenDbEntityWithNewToken>(foundTokenString);
+            return foundToken;
         }
+
+        log.LogInformation("Found no token inside storage, retrieving from DB instead.");
+        if (refreshTokens is null) throw new ArgumentException("No Tokens found!");
+
+        RefreshToken refreshTokenFromDB = null;
+        var i = 0;
+        foreach (var refToken in refreshTokens)
+        {
+            refreshTokenFromDB = refToken;
+            i++;
+        }
+
+        if (refreshTokenFromDB is null) throw new ArgumentException("Token was null.");
+
+        log.LogInformation($"TokenId from DB: {refreshTokenFromDB.TokenId}");
+
+        var decryptedRefreshToken = await cryptographer.GetDecryptedToken(refreshTokenFromDB.Refresh_token);
+        var token = await hueRemoteOAuth2.FetchTokenFromPhilipsHue(decryptedRefreshToken);
+
+        token.AccessToken = cryptographer.GetEncryptedToken(token.AccessToken);
+        token.RefreshToken = cryptographer.GetEncryptedToken(token.RefreshToken);
+
+        var tokenDbEntityWithToken =
+            new TokenDbEntityWithNewToken(refreshTokenFromDB.Id, refreshTokenFromDB.TokenId, token);
+        return tokenDbEntityWithToken;
     }
-    
-    public static string EncryptRefreshToken(string refreshToken)
+
+    private static string retrieveTokenFromStorage(string orchestrationId, ILogger log)
     {
-        try
+        var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
+        var tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+
+        var storageTable = Environment.GetEnvironmentVariable("StorageTable");
+        log.LogInformation($"Using storage table: ({storageTable})");
+        var table = tableClient.GetTableReference(Environment.GetEnvironmentVariable("StorageTable"));
+
+        var partitionQuery = TableQuery.GenerateFilterCondition(
+            "PartitionKey", QueryComparisons.Equal, orchestrationId);
+
+        var functionNameQuery = TableQuery.GenerateFilterCondition(
+            "Result", QueryComparisons.NotEqual, null);
+
+        var combinedFilter = TableQuery.CombineFilters(partitionQuery, TableOperators.And, functionNameQuery);
+
+        var results = table.ExecuteQuery(new TableQuery()
+                .Where(combinedFilter))
+            .ToArray();
+
+        string accessToken = null;
+        foreach (var dynamicTableEntity in results)
         {
-            string ToReturn = "";
-            string publickey = Environment.GetEnvironmentVariable("public_key");
-            string secretkey = Environment.GetEnvironmentVariable("secret_key");
-            
-            byte[] secretkeyByte = { };
-            secretkeyByte = System.Text.Encoding.UTF8.GetBytes(secretkey);
-            byte[] publickeybyte = { };
-            publickeybyte = System.Text.Encoding.UTF8.GetBytes(publickey);
-            MemoryStream ms = null;
-            CryptoStream cs = null;
-            byte[] inputbyteArray = Encoding.UTF8.GetBytes(refreshToken);
-            using (DESCryptoServiceProvider des = new DESCryptoServiceProvider())
-            {
-                ms = new MemoryStream();
-                cs = new CryptoStream(ms, des.CreateEncryptor(publickeybyte, secretkeyByte), CryptoStreamMode.Write);
-                cs.Write(inputbyteArray, 0, inputbyteArray.Length);
-                cs.FlushFinalBlock();
-                ToReturn = Convert.ToBase64String(ms.ToArray());
-            }
-            return ToReturn;
+            var result = dynamicTableEntity.Properties["Result"].StringValue;
+            if (result.Contains("{\"access_token")) accessToken = result;
         }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message, ex.InnerException);
-        }
+
+        return accessToken;
     }
 }

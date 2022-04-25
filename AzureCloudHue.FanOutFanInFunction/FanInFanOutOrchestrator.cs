@@ -32,11 +32,10 @@ public static class FanInFanOutOrchestrator
             throw;
         }
 
-        string accessToken = "";
+        TokenDbEntityWithNewToken tokenDbEntityWithNewToken = null;
         try
         {
-            // TODO overloaded method igen..
-            accessToken = await context.CallActivityAsync<string>("TokenRetriever", "null");
+            tokenDbEntityWithNewToken = await context.CallActivityAsync<TokenDbEntityWithNewToken>("TokenRetriever", context.InstanceId);
         }
         catch (FunctionFailedException e)
         {
@@ -51,7 +50,7 @@ public static class FanInFanOutOrchestrator
             var parallelTasks = new List<Task<string>>();
             for (int i = 0; i < hueLights.Count; i++)
             {
-                var tokenWithHueLight = new TokenWithHueLight(hueLights[i], accessToken);
+                var tokenWithHueLight = new TokenWithHueLight(hueLights[i], tokenDbEntityWithNewToken.Token);
                 Task<string> task = context.CallActivityAsync<string>("HueLamp_SetLightState", tokenWithHueLight);
                 parallelTasks.Add(task);
             }
@@ -63,18 +62,26 @@ public static class FanInFanOutOrchestrator
             outputs.Add(fe.Message);
             throw;
         }
-
-
-        string concatenatedResponses = String.Join(String.Empty, results);
-        var addedToCosmosDB = await context.CallActivityAsync<string>("AddHueResultToCosmosDB", concatenatedResponses);
-
-        // var refreshToken = tokenKeyValuePair.Value;
-        // refreshToken.access_token_expires_in = dateTimeExpiration.ToString();
-        // refreshToken.refresh_token_expires_in = dateTimeRefreshTokenExpiresIn.ToString();
-        // var tokenWrittenToCosmosDB = await context.CallActivityAsync<string>("WriteTokenToCosmosDB", refreshToken);
         
-        // outputs.Add(tokenWrittenToCosmosDB) ?
+        string concatenatedResponses = String.Join(String.Empty, results);
+
+        string insertNewRefreshToken = null;
+        string addedToCosmosDB = null;
+        try
+        {
+            insertNewRefreshToken =
+                await context.CallActivityAsync<string>("InsertRefreshToken", tokenDbEntityWithNewToken);
+            addedToCosmosDB = await context.CallActivityAsync<string>("AddHueResultToCosmosDB", concatenatedResponses);
+        }
+        catch (FunctionFailedException fe)
+        {
+            log.LogError($"Error occured {fe.Message}");
+            outputs.Add(fe.Message);
+            throw;
+        }
+
         outputs.Add(addedToCosmosDB);
+        outputs.Add(insertNewRefreshToken);
         
         return outputs;
     }

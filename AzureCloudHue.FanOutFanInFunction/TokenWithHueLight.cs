@@ -8,11 +8,11 @@ namespace AzureCloudHue.FanOutFanInFunction;
  */
 public class TokenWithHueLight
 {
-      public string AccessToken { get; }
+      public Token Token { get; }
       public HueLight HueLight { get; }
-      public TokenWithHueLight(HueLight hueLight, string accessToken)
+      public TokenWithHueLight(HueLight hueLight, Token token)
       {
        HueLight = hueLight;
-       AccessToken = accessToken;
+       Token = token;
       }
 }

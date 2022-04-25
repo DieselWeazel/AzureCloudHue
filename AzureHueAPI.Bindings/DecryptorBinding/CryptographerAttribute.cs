@@ -4,7 +4,7 @@ namespace HueClient.Bindings.OAuth2DecryptorBinding;
 
 [Binding]
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
-public class HueRemoteOAuth2DecryptorAttribute : Attribute
+public class CryptographerAttribute : Attribute
 {
     [AutoResolve] public string PublicKeyVaultKey { get; set; }
     [AutoResolve] public string SecretKeyVaultKey { get; set; }

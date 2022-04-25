@@ -16,8 +16,8 @@ public static class WriteHueResponseToCosmosDB
     public static async Task<string> WriteHueResponseFunction(
         [ActivityTrigger]string okObjectJson,
         [CosmosDB(
-            databaseName: "ToDoList",
-            collectionName: "new-container",
+            "Hue",
+            "hue-lightstates",
             CreateIfNotExists = true,
             ConnectionStringSetting = "CosmosDbConnectionString")]IAsyncCollector<dynamic> documentsOut,
         ILogger log)
