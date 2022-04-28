@@ -1,0 +1,47 @@
+[
+  {
+    "lightId": 10,
+    "lightState": {
+      "on": true,
+      "brightness": 255,
+      "hexColor": "0e17c2",
+      "transitionTimeInMs": "400.00"
+    }
+  },
+  {
+    "lightId": 14,
+    "lightState": {
+      "on": true,
+      "brightness": 255,
+      "hexColor": "0e17c2",
+      "transitionTimeInMs": "400.00"
+    }
+  },
+  {
+    "lightId": 11,
+    "lightState": {
+      "on": true,
+      "brightness": 255,
+      "hexColor": "0e17c2",
+      "transitionTimeInMs": "400.00"
+    }
+  },
+  {
+    "lightId": 4,
+    "lightState": {
+      "on": true,
+      "brightness": 255,
+      "hexColor": "0e17c2",
+      "transitionTimeInMs": "400.00"
+    }
+  },
+  {
+    "lightId": 9,
+    "lightState": {
+      "on": true,
+      "brightness": 255,
+      "hexColor": "0e17c2",
+      "transitionTimeInMs": "400.00"
+    }
+  }
+]

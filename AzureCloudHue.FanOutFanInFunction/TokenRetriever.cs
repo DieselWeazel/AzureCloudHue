@@ -46,13 +46,13 @@ public class TokenRetriever
         log.LogInformation($"Token retriever initialized with orchestrationId {orchestrationId}");
         log.LogInformation("Looking for token inside storage.");
 
-        var foundTokenString = retrieveTokenFromStorage(orchestrationId, log);
-        if (foundTokenString != null)
-        {
-            log.LogInformation("Found token in storage, using that instead.");
-            var foundToken = JsonConvert.DeserializeObject<TokenDbEntityWithNewToken>(foundTokenString);
-            return foundToken;
-        }
+        // var foundTokenString = retrieveTokenFromStorage(orchestrationId, log);
+        // if (foundTokenString != null)
+        // {
+        //     log.LogInformation("Found token in storage, using that instead.");
+        //     var foundToken = JsonConvert.DeserializeObject<TokenDbEntityWithNewToken>(foundTokenString);
+        //     return foundToken;
+        // }
 
         log.LogInformation("Found no token inside storage, retrieving from DB instead.");
         if (refreshTokens is null) throw new ArgumentException("No Tokens found!");
