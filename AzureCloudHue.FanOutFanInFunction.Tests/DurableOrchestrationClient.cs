@@ -13,7 +13,7 @@ public class DurableOrchestrationTest
 {
     private HttpClient _client;
 
-    private string SEND_REQUEST_URL = "http://localhost:7071/api/HttpTriggerChangeHueLights_HttpStart";
+    private string SEND_REQUEST_URL = "https://azure-hue-func-1666.azurewebsites.net/api/HttpTriggerChangeHueLights_HttpStart";
 
     [SetUp]
     public void Setup()
@@ -31,8 +31,8 @@ public class DurableOrchestrationTest
         var date = DateTime.Now.TimeOfDay;
         var endTime = DateTime.Now.Add(new TimeSpan(0, 0, 5, 0));
         
-        // while (DateTime.Now < endTime)
-        // {
+        while (DateTime.Now < endTime)
+        {
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, SEND_REQUEST_URL);
             requestMessage.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
         
@@ -43,9 +43,10 @@ public class DurableOrchestrationTest
 
             var statusQueryUri = JsonConvert.DeserializeObject<StatusQueryURI>(content);
         
+            // https://azure-hue-func-1666.azurewebsites.net/runtime/webhooks/durabletask/instances/61c58d6c90d141ea8a3f7fb474659915?taskHub=azurehuefunc1666&connection=Storage&code=NGH406kiO8FzUErOa8AHrU4JhZBdCrIItpQDShXSXEpgRY75wVsd8A==
             statusQueryGetUri =
-                "http://localhost:7071/runtime/webhooks/durabletask/instances/" +
-                $"{statusQueryUri.Id}?taskHub=TestHubName&connection=Storage&code=LtgAn/7aNuqb6M9dmomUxPM6pMPgPwlaza14za0KmbR8hQAOymjt3w==";
+                "https://azure-hue-func-1666.azurewebsites.net/runtime/webhooks/durabletask/instances/" +
+                $"{statusQueryUri.Id}?taskHub=azurehuefunc1666&connection=Storage&code=NGH406kiO8FzUErOa8AHrU4JhZBdCrIItpQDShXSXEpgRY75wVsd8A==";
 
             DurableTaskRunTimeStatus durableTaskRunTimeStatus = new DurableTaskRunTimeStatus();
             durableTaskRunTimeStatus.RuntimeStatus = "Starting";
@@ -61,8 +62,8 @@ public class DurableOrchestrationTest
                 durableTaskRunTimeStatus = JsonConvert.DeserializeObject<DurableTaskRunTimeStatus>(statusContent);
                 Assert.AreEqual(durableTaskRunTimeStatus.InstanceId, statusQueryUri.Id);
             }
-            // Thread.Sleep(100);
-        // }
+            Thread.Sleep(100);
+        }
 
         Assert.True(jsonContent.Length > 0);
         

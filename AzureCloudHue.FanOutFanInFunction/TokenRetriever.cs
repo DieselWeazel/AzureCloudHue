@@ -45,18 +45,31 @@ public class TokenRetriever
     {
         log.LogInformation($"Token retriever initialized with orchestrationId {orchestrationId}");
         log.LogInformation("Looking for token inside storage.");
-
-        // var foundTokenString = retrieveTokenFromStorage(orchestrationId, log);
-        // if (foundTokenString != null)
-        // {
-        //     log.LogInformation("Found token in storage, using that instead.");
-        //     var foundToken = JsonConvert.DeserializeObject<TokenDbEntityWithNewToken>(foundTokenString);
-        //     return foundToken;
-        // }
-
-        log.LogInformation("Found no token inside storage, retrieving from DB instead.");
+        
         if (refreshTokens is null) throw new ArgumentException("No Tokens found!");
 
+        var refreshTokenFromDB = FetchPreviousRefreshTokenFromDB(refreshTokens);
+
+        log.LogInformation($"TokenId from DB: {refreshTokenFromDB.TokenId}");
+
+        var decryptedRefreshToken = await cryptographer.GetDecryptedToken(refreshTokenFromDB.Refresh_token);
+        var token = await hueRemoteOAuth2.FetchTokenFromPhilipsHue(decryptedRefreshToken);
+
+        EncryptTokenToHideItsValuesInsideAzureStorage(cryptographer, token);
+
+        var tokenDbEntityWithToken =
+            new TokenDbEntityWithNewToken(refreshTokenFromDB.Id, refreshTokenFromDB.TokenId, token);
+        return tokenDbEntityWithToken;
+    }
+
+    private static void EncryptTokenToHideItsValuesInsideAzureStorage(CryptographerFluentBinding cryptographer, Token token)
+    {
+        token.AccessToken = cryptographer.GetEncryptedToken(token.AccessToken);
+        token.RefreshToken = cryptographer.GetEncryptedToken(token.RefreshToken);
+    }
+
+    private static RefreshToken FetchPreviousRefreshTokenFromDB(IEnumerable<RefreshToken> refreshTokens)
+    {
         RefreshToken refreshTokenFromDB = null;
         var i = 0;
         foreach (var refToken in refreshTokens)
@@ -66,48 +79,6 @@ public class TokenRetriever
         }
 
         if (refreshTokenFromDB is null) throw new ArgumentException("Token was null.");
-
-        log.LogInformation($"TokenId from DB: {refreshTokenFromDB.TokenId}");
-
-        var decryptedRefreshToken = await cryptographer.GetDecryptedToken(refreshTokenFromDB.Refresh_token);
-        var token = await hueRemoteOAuth2.FetchTokenFromPhilipsHue(decryptedRefreshToken);
-
-        token.AccessToken = cryptographer.GetEncryptedToken(token.AccessToken);
-        token.RefreshToken = cryptographer.GetEncryptedToken(token.RefreshToken);
-
-        var tokenDbEntityWithToken =
-            new TokenDbEntityWithNewToken(refreshTokenFromDB.Id, refreshTokenFromDB.TokenId, token);
-        return tokenDbEntityWithToken;
-    }
-
-    private static string retrieveTokenFromStorage(string orchestrationId, ILogger log)
-    {
-        var storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
-        var tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-
-        var storageTable = Environment.GetEnvironmentVariable("StorageTable");
-        log.LogInformation($"Using storage table: ({storageTable})");
-        var table = tableClient.GetTableReference(Environment.GetEnvironmentVariable("StorageTable"));
-
-        var partitionQuery = TableQuery.GenerateFilterCondition(
-            "PartitionKey", QueryComparisons.Equal, orchestrationId);
-
-        var functionNameQuery = TableQuery.GenerateFilterCondition(
-            "Result", QueryComparisons.NotEqual, null);
-
-        var combinedFilter = TableQuery.CombineFilters(partitionQuery, TableOperators.And, functionNameQuery);
-
-        var results = table.ExecuteQuery(new TableQuery()
-                .Where(combinedFilter))
-            .ToArray();
-
-        string accessToken = null;
-        foreach (var dynamicTableEntity in results)
-        {
-            var result = dynamicTableEntity.Properties["Result"].StringValue;
-            if (result.Contains("{\"access_token")) accessToken = result;
-        }
-
-        return accessToken;
+        return refreshTokenFromDB;
     }
 }

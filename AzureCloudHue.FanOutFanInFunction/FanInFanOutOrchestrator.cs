@@ -19,11 +19,51 @@ public static class FanInFanOutOrchestrator
     {
         var outputs = new List<string>();
         var jArrayOfLightsToChange = context.GetInput<JArray>();
+        var hueLightCommands = await MapHueLightCommands(context, log, jArrayOfLightsToChange, outputs);
+
+        var tokenDbEntityWithNewToken = await FetchUpdatedRefreshToken(context, outputs);
+
+        var results = await SendCommandsToHueBridge(context, hueLightCommands, tokenDbEntityWithNewToken);
+
+        string concatenatedResponses = String.Join(String.Empty, results);
+
+        var insertNewRefreshToken = await RefreshAndInsertRefreshToken(context, log, tokenDbEntityWithNewToken, outputs);
+
+        string addedToCosmosDB = null;
+
+        addedToCosmosDB = await AddHueCommandResultsToCosmosDB(context, log, concatenatedResponses, outputs);
+
+        outputs.Add(addedToCosmosDB);
+        outputs.Add(insertNewRefreshToken);
+        
+        return outputs;
+    }
+
+    private static async Task<TokenDbEntityWithNewToken> FetchUpdatedRefreshToken(IDurableOrchestrationContext context, List<string> outputs)
+    {
+        TokenDbEntityWithNewToken tokenDbEntityWithNewToken = null;
+        try
+        {
+            tokenDbEntityWithNewToken =
+                await context.CallActivityAsync<TokenDbEntityWithNewToken>("TokenRetriever", context.InstanceId);
+        }
+        catch (FunctionFailedException e)
+        {
+            // log.LogError($"Error when retrieving token: {e.Message}");
+            outputs.Add(e.Message);
+            throw;
+        }
+
+        return tokenDbEntityWithNewToken;
+    }
+
+    private static async Task<List<HueLight>> MapHueLightCommands(IDurableOrchestrationContext context, ILogger log,
+        JArray jArrayOfLightsToChange, List<string> outputs)
+    {
         List<HueLight> hueLights;
         try
         {
             hueLights = await context.CallActivityAsync<List<HueLight>>("DeserializeHueLights", jArrayOfLightsToChange);
-
         }
         catch (FunctionFailedException e)
         {
@@ -32,19 +72,50 @@ public static class FanInFanOutOrchestrator
             throw;
         }
 
-        TokenDbEntityWithNewToken tokenDbEntityWithNewToken = null;
+        return hueLights;
+    }
+
+    private static async Task<string> AddHueCommandResultsToCosmosDB(IDurableOrchestrationContext context, ILogger log,
+        string concatenatedResponses, List<string> outputs)
+    {
+        string addedToCosmosDB;
         try
         {
-            tokenDbEntityWithNewToken = await context.CallActivityAsync<TokenDbEntityWithNewToken>("TokenRetriever", context.InstanceId);
+            addedToCosmosDB = await context.CallActivityAsync<string>("AddHueResultToCosmosDB", concatenatedResponses);
         }
-        catch (FunctionFailedException e)
+        catch (FunctionFailedException fe)
         {
-            // log.LogError($"Error when retrieving token: {e.Message}");
-            outputs.Add(e.Message);
+            log.LogError($"Error occured {fe.Message}");
+            outputs.Add(fe.Message);
             throw;
         }
-        
-        string[] results;
+
+        return addedToCosmosDB;
+    }
+
+    private static async Task<string> RefreshAndInsertRefreshToken(IDurableOrchestrationContext context, ILogger log,
+        TokenDbEntityWithNewToken tokenDbEntityWithNewToken, List<string> outputs)
+    {
+        string insertNewRefreshToken = null;
+        try
+        {
+            insertNewRefreshToken =
+                await context.CallActivityAsync<string>("InsertRefreshToken", tokenDbEntityWithNewToken);
+        }
+        catch (FunctionFailedException fe)
+        {
+            log.LogError($"Error occured {fe.Message}");
+            outputs.Add(fe.Message);
+            throw;
+        }
+
+        return insertNewRefreshToken;
+    }
+
+    private static async Task<string[]> SendCommandsToHueBridge(IDurableOrchestrationContext context, List<HueLight> hueLights,
+        TokenDbEntityWithNewToken tokenDbEntityWithNewToken)
+    {
+        string[] results = { };
         try
         {
             var parallelTasks = new List<Task<string>>();
@@ -59,30 +130,9 @@ public static class FanInFanOutOrchestrator
         }
         catch (FunctionFailedException fe)
         {
-            outputs.Add(fe.Message);
-            throw;
-        }
-        
-        string concatenatedResponses = String.Join(String.Empty, results);
-
-        string insertNewRefreshToken = null;
-        string addedToCosmosDB = null;
-        try
-        {
-            insertNewRefreshToken =
-                await context.CallActivityAsync<string>("InsertRefreshToken", tokenDbEntityWithNewToken);
-            addedToCosmosDB = await context.CallActivityAsync<string>("AddHueResultToCosmosDB", concatenatedResponses);
-        }
-        catch (FunctionFailedException fe)
-        {
-            log.LogError($"Error occured {fe.Message}");
-            outputs.Add(fe.Message);
-            throw;
+            results = new[] { fe.Message };
         }
 
-        outputs.Add(addedToCosmosDB);
-        outputs.Add(insertNewRefreshToken);
-        
-        return outputs;
+        return results;
     }
 }

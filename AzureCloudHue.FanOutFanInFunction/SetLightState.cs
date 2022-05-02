@@ -29,26 +29,10 @@ public class SetLightState
         CryptographerFluentBinding cryptographer,
         ILogger log)
     {
-        // TODO allt det här borde egentligen till sin egen binding med.
-        // Det skulle även se bra ut med username som då kan bli en miljövariabel.
+        // TODO allt det här skulle också kunna vara en alldeles egen binding.
         HttpClient client = new HttpClient();
 
-        var hueLight = tokenWithHueLight.HueLight;
-
-        // TODO miljövariabel!
-        var username = "Rf7RBx4nC2TaSu9TKE1xeJnP49JCjflklG0earcn";
-        var jsonContent = GetJsonFormattedState(hueLight.LightState);
-
-        log.LogInformation($"JsonContent to be sent to bridge: {jsonContent}");
-        
-        // TODO, varför reagerar Rider med {{}}? Är det miljövariabler som går in då?
-        // var url = $"https://api.meethue.com/bridge/{{username}}/lights/{hueLight.LightId}/state";
-
-        var url = $"https://api.meethue.com/bridge/{username}/lights/{hueLight.LightId}/state";
-        var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
-        requestMessage.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-        string accessToken = await cryptographer.GetDecryptedToken(tokenWithHueLight.Token.AccessToken);
-        client.DefaultRequestHeaders.Authorization = newAuthenticationHeaderValue("Bearer", accessToken);
+        var requestMessage = await CreateHttpRequestMessage(tokenWithHueLight, cryptographer, log, client);
 
         var responseMessage = await client.SendAsync(requestMessage);
 
@@ -64,7 +48,25 @@ public class SetLightState
         
         return JsonConvert.SerializeObject(new OkObjectResult(content));
     }
-    
+
+    private async Task<HttpRequestMessage> CreateHttpRequestMessage(TokenWithHueLight tokenWithHueLight,
+        CryptographerFluentBinding cryptographer, ILogger log, HttpClient client)
+    {
+        var hueLight = tokenWithHueLight.HueLight;
+
+        var username = Environment.GetEnvironmentVariable("HUE_USER_NAME");
+        var jsonContent = GetJsonFormattedState(hueLight.LightState);
+
+        log.LogInformation($"JsonContent to be sent to bridge: {jsonContent}");
+
+        var url = $"https://api.meethue.com/bridge/{username}/lights/{hueLight.LightId}/state";
+        var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+        requestMessage.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+        string accessToken = await cryptographer.GetDecryptedToken(tokenWithHueLight.Token.AccessToken);
+        client.DefaultRequestHeaders.Authorization = newAuthenticationHeaderValue("Bearer", accessToken);
+        return requestMessage;
+    }
+
     private AuthenticationHeaderValue newAuthenticationHeaderValue(string bearer, string tokenAccessToken)
     {
         return new AuthenticationHeaderValue(bearer, tokenAccessToken);
